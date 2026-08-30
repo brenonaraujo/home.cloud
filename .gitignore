@@ -1,0 +1,16 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+node_modules/
+dist/
+.turbo/
+.vite/
+coverage/
+*.log
+.idea/
+.vscode/
+.netlify/
