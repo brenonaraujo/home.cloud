@@ -100,6 +100,13 @@
             class="inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-500"
           >{{ t('console.hermes.cliOpen') }}</a>
           <a
+            v-if="tuiHref"
+            :href="tuiHref"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
+          >{{ t('console.hermes.tuiOpen') }}</a>
+          <a
             :href="'https://' + pageInstance.hostname + '/'"
             target="_blank"
             rel="noopener"
@@ -213,6 +220,7 @@ import {
   createHermesInstance,
   deleteHermesInstance,
   fetchHermesInstances,
+  hermesTuiUrl,
   humanHermesError,
   renameHermesInstance,
   stripAgentPrefix
@@ -261,6 +269,7 @@ const pageInstance = computed(() => {
 const previewSlug = computed(() => agentSlug(publicName.value || defaultName.value))
 const previewHost = computed(() => (previewSlug.value ? `${previewSlug.value}.brenon.cloud` : ''))
 const waiting = computed(() => instances.value.some(isStarting))
+const tuiHref = computed(() => hermesTuiUrl(pageInstance.value))
 
 function canOpen(row) {
   return Boolean(row?.ready && row.hostname)

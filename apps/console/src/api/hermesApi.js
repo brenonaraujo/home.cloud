@@ -170,3 +170,17 @@ export function humanHermesError(err, fallback) {
   if (/load failed|failed to fetch|networkerror/i.test(msg)) return fallback
   return msg || fallback
 }
+
+export function pickReadyHermesInstance(rows, email) {
+  const list = Array.isArray(rows) ? rows : []
+  const ready = list.filter((row) => Boolean(row?.ready && row?.hostname))
+  return ready.find((row) => row.email === email) || ready[0] || null
+}
+
+export function hermesTuiUrl(instance) {
+  const explicit = String(instance?.tuiUrl || '').trim()
+  if (explicit) return explicit
+  const host = String(instance?.hostname || '').trim()
+  if (!host) return ''
+  return `https://${host}/hermes/tui`
+}

@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canChat"
+    v-if="showDock"
     class="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3"
   >
     <transition name="hermes-panel">
@@ -54,7 +54,7 @@
             >{{ m.content }}</div>
           </div>
           <p v-if="sending" class="text-xs text-gray-500">{{ t('console.site.dockTyping') }}</p>
-          <p v-if="chatError" class="text-sm text-amber-300">{{ chatError }}</p>
+          <p v-if="chatError" class="text-sm text-amber-300" role="alert">{{ chatError }}</p>
         </div>
 
         <form class="flex gap-2 border-t border-white/10 p-3" @submit.prevent="send">
@@ -109,7 +109,12 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/authStore'
 import { useHermesDockStore } from '../stores/hermesDockStore'
 import { canManageHermes } from '../config/console-taxonomy.mjs'
-import { fetchHermesInstances, humanHermesError, sendHermesChat } from '../api/hermesApi.js'
+import {
+  fetchHermesInstances,
+  humanHermesError,
+  pickReadyHermesInstance,
+  sendHermesChat
+} from '../api/hermesApi.js'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -123,6 +128,7 @@ const scroller = ref(null)
 const fresh = ref(true)
 
 const canChat = computed(() => Boolean(instance.value?.ready && instance.value?.hostname))
+const showDock = computed(() => dock.open || canChat.value)
 
 function scrollEnd() {
   nextTick(() => {
@@ -141,7 +147,11 @@ function restart() {
 
 async function send() {
   const text = draft.value.trim()
-  if (!text || sending.value || !auth.idToken) return
+  if (!text || sending.value) return
+  if (!auth.idToken) {
+    chatError.value = t('console.site.dockError')
+    return
+  }
   draft.value = ''
   thread.value = [...thread.value, { role: 'user', content: text }]
   sending.value = true
@@ -152,6 +162,7 @@ async function send() {
     fresh.value = false
     const reply = String(data.reply || '').trim()
     if (reply) thread.value = [...thread.value, { role: 'assistant', content: reply }]
+    else chatError.value = t('console.site.dockEmptyReply')
   } catch (err) {
     chatError.value = humanHermesError(err, t('console.site.dockError'))
   } finally {
@@ -169,9 +180,11 @@ async function load() {
   try {
     const data = await fetchHermesInstances(auth.idToken)
     const rows = Array.isArray(data.instances) ? data.instances : []
-    instance.value = rows.find((row) => row.email === auth.email && row.ready) || null
+    instance.value = pickReadyHermesInstance(rows, auth.email)
+    if (dock.open && !canChat.value) chatError.value = t('console.site.dockNotReady')
   } catch {
     instance.value = null
+    if (dock.open) chatError.value = t('console.site.dockError')
   }
 }
 
@@ -187,10 +200,14 @@ watch(
   () => dock.nonce,
   () => {
     thread.value = []
-    chatError.value = ''
+    chatError.value = canChat.value ? '' : t('console.site.dockNotReady')
     fresh.value = true
   }
 )
+
+watch(canChat, (ok) => {
+  if (ok && chatError.value === t('console.site.dockNotReady')) chatError.value = ''
+})
 
 onMounted(load)
 </script>

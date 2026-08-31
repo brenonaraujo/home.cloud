@@ -18,18 +18,27 @@
       <li><span class="font-mono text-blue-200">/</span> — {{ t('console.site.factApex') }}</li>
       <li><span class="font-mono text-blue-200">/hermes</span> — {{ t('console.site.factChat') }}</li>
       <li><span class="font-mono text-blue-200">/hermes/cli</span> — {{ t('console.site.factCli') }}</li>
+      <li><span class="font-mono text-blue-200">/hermes/tui</span> — {{ t('console.site.factTui') }}</li>
       <li><span class="font-mono text-blue-200">/hermes/hooks</span> — {{ t('console.site.factHooks') }}</li>
     </ul>
     <p class="mt-4 max-w-2xl text-sm leading-relaxed text-gray-400">{{ t('console.site.agentBuilds') }}</p>
 
-    <button
-      v-if="instance.ready && instance.hostname"
-      type="button"
-      class="mt-6 inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-500"
-      @click="dock.startChat()"
-    >
-      {{ t('console.site.startChat') }}
-    </button>
+    <div v-if="instance.ready && instance.hostname" class="mt-6 flex flex-wrap gap-2">
+      <button
+        type="button"
+        class="inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-500"
+        @click="dock.startChat()"
+      >
+        {{ t('console.site.startChat') }}
+      </button>
+      <a
+        v-if="tuiHref"
+        :href="tuiHref"
+        target="_blank"
+        rel="noopener"
+        class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
+      >{{ t('console.hermes.tuiOpen') }}</a>
+    </div>
     <p v-else class="mt-6 text-sm text-gray-500">{{ t('console.hermes.starting') }}</p>
 
     <p v-if="error" class="mt-4 text-sm text-amber-300">{{ error }}</p>
@@ -88,7 +97,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/authStore'
 import { useHermesDockStore } from '../../stores/hermesDockStore'
-import { fetchHermesSite, humanHermesError, resetHermesSite, saveHermesSite } from '../../api/hermesApi.js'
+import { fetchHermesSite, hermesTuiUrl, humanHermesError, resetHermesSite, saveHermesSite } from '../../api/hermesApi.js'
 
 const props = defineProps({
   instance: { type: Object, default: null }
@@ -108,6 +117,8 @@ const saving = ref(false)
 const resetting = ref(false)
 const saved = ref(false)
 const error = ref('')
+
+const tuiHref = computed(() => hermesTuiUrl(props.instance))
 
 const visHint = computed(() => {
   if (visibility.value === 'members') return t('console.site.hintMembers')
