@@ -16,8 +16,10 @@ comentário team-manager nessa issue já diz a mesma coisa.
 1. `gh issue list --state open` e `gh pr list --state open`.
 2. Épico #2: não implementa; não comenta em loop.
 3. blocked-by OPEN → não comece a filha.
-4. #8 (301 Netlify no git do **site**) não se implementa neste repo.
-   Uma vez: label `blocked`, tira `triage`. Depois: silêncio.
+4. #8 (301 `/console` no Netlify de **brenon.cloud**) = cutover humano.
+   **NUNCA** spawn, **NUNCA** `ready`, **NUNCA** abrir ~/Projects/brenon.cloud.
+   `console.brenon.cloud` 200 **não** é GO. Cron orquestrador **não** é GO. GO só no chat default do operador.
+   Se a label não for `blocked`: uma vez, `blocked` + tira `triage`/`ready`. Depois: silêncio.
 5. Labels — **mova-as**. Comentário sem label não conta.
    - DoD do architect e ainda triage/refined → `ready`. Não re-spawn architect.
    - "peguei" da mesma persona < 30 min → não re-spawn.
