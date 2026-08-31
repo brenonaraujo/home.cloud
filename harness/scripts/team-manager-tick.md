@@ -9,10 +9,12 @@ Playbook (uma passada no board):
 2. Ignore issues de teste. Épico #2: só comentário de status, não implementa.
 3. Respeite blocked-by: se o blocker está OPEN, não comece a filha.
 4. #8 (301 no site) = cutover live — NÃO despachar.
-5. Label primária:
+5. Label primária (e **mova a label** — comentário sem label não conta):
+   - Se o último comentário útil é DoD do architect e ainda está `triage`/`refined` → tire isso, ponha `ready`. Não re-spawn architect.
    - triage + type/feature → spawn domain-expert-home-cloud
    - triage + type/infra ou type/technical → spawn solutions-architect (skip domain)
    - refined → spawn solutions-architect
+   - Já tem comentário "peguei" da mesma persona nos últimos 30 min → não re-spawn.
    - ready → crie/push branch feature/<id>-<slug> a partir de main; spawn builder (frontend-engineer / backend-engineer / devops-engineer). Backend+frontend na MESMA branch só se path-scope disjunto.
    - in-progress + PR aberto + CI verde → spawn quality-assurance
    - qa + PR mergeable só neste git → squash merge, label done, feche a issue (autorizado neste ambiente de teste)
