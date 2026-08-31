@@ -16,62 +16,28 @@
             <p class="text-sm font-semibold text-white">{{ t('console.site.dockTitle') }}</p>
             <p class="truncate text-xs text-gray-400">{{ t('console.site.dockHint') }}</p>
           </div>
-          <div class="flex items-center gap-1">
-            <button
-              type="button"
-              class="rounded-full px-2.5 py-1 text-[11px] text-gray-400 hover:bg-white/5 hover:text-white disabled:opacity-40"
-              :disabled="sending"
-              @click="restart"
-            >
-              {{ t('console.site.dockNew') }}
-            </button>
-            <button
-              type="button"
-              class="hermes-x"
-              :aria-label="t('console.site.dockClose')"
-              @click="dock.close()"
-            >
-              <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" aria-hidden="true">
-                <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div ref="scroller" class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
-          <p v-if="!thread.length && !sending" class="text-sm leading-relaxed text-gray-400">
-            {{ t('console.site.dockEmpty') }}
-          </p>
-          <div
-            v-for="(m, i) in thread"
-            :key="i"
-            class="flex"
-            :class="m.role === 'user' ? 'justify-end' : 'justify-start'"
-          >
-            <div
-              class="max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed"
-              :class="m.role === 'user' ? 'bg-[#f4911e] text-gray-950' : 'bg-gray-900 text-gray-100'"
-            >{{ m.content }}</div>
-          </div>
-          <p v-if="sending" class="text-xs text-gray-500">{{ t('console.site.dockTyping') }}</p>
-          <p v-if="chatError" class="text-sm text-amber-300" role="alert">{{ chatError }}</p>
-        </div>
-
-        <form class="flex gap-2 border-t border-white/10 p-3" @submit.prevent="send">
-          <input
-            v-model="draft"
-            class="h-11 flex-1 rounded-2xl border border-white/15 bg-gray-900 px-3 text-sm text-white outline-none focus:border-[#f4911e] disabled:opacity-60"
-            :placeholder="t('console.site.dockPlaceholder')"
-            :disabled="sending"
-          >
           <button
-            type="submit"
-            class="h-11 min-w-[5.5rem] rounded-2xl bg-[#f4911e] px-4 text-sm font-semibold text-gray-950 disabled:opacity-70"
-            :disabled="sending || !draft.trim()"
+            type="button"
+            class="hermes-x"
+            :aria-label="t('console.site.dockClose')"
+            @click="dock.close()"
           >
-            {{ sending ? '…' : t('console.site.dockSend') }}
+            <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" aria-hidden="true">
+              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
           </button>
-        </form>
+        </div>
+
+        <iframe
+          v-if="tuiSrc"
+          :key="dock.nonce"
+          class="min-h-0 w-full flex-1 border-0 bg-black"
+          :src="tuiSrc"
+          :title="t('console.site.dockTitle')"
+        />
+        <p v-else class="px-4 py-4 text-sm leading-relaxed text-amber-300" role="alert">
+          {{ panelError || t('console.site.dockNotReady') }}
+        </p>
       </div>
     </transition>
 
@@ -104,72 +70,30 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/authStore'
 import { useHermesDockStore } from '../stores/hermesDockStore'
 import { canManageHermes } from '../config/console-taxonomy.mjs'
 import {
   fetchHermesInstances,
+  hermesTuiUrl,
   humanHermesError,
-  pickReadyHermesInstance,
-  sendHermesChat
+  pickReadyHermesInstance
 } from '../api/hermesApi.js'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const dock = useHermesDockStore()
 const instance = ref(null)
-const draft = ref('')
-const thread = ref([])
-const sending = ref(false)
-const chatError = ref('')
-const scroller = ref(null)
-const fresh = ref(true)
+const panelError = ref('')
 
 const canChat = computed(() => Boolean(instance.value?.ready && instance.value?.hostname))
 const showDock = computed(() => dock.open || canChat.value)
-
-function scrollEnd() {
-  nextTick(() => {
-    const el = scroller.value
-    if (el) el.scrollTop = el.scrollHeight
-  })
-}
-
-function restart() {
-  if (sending.value) return
-  thread.value = []
-  chatError.value = ''
-  fresh.value = true
-  dock.restart()
-}
-
-async function send() {
-  const text = draft.value.trim()
-  if (!text || sending.value) return
-  if (!auth.idToken) {
-    chatError.value = t('console.site.dockError')
-    return
-  }
-  draft.value = ''
-  thread.value = [...thread.value, { role: 'user', content: text }]
-  sending.value = true
-  chatError.value = ''
-  scrollEnd()
-  try {
-    const data = await sendHermesChat(auth.idToken, text, { fresh: fresh.value })
-    fresh.value = false
-    const reply = String(data.reply || '').trim()
-    if (reply) thread.value = [...thread.value, { role: 'assistant', content: reply }]
-    else chatError.value = t('console.site.dockEmptyReply')
-  } catch (err) {
-    chatError.value = humanHermesError(err, t('console.site.dockError'))
-  } finally {
-    sending.value = false
-    scrollEnd()
-  }
-}
+const tuiSrc = computed(() => {
+  const url = hermesTuiUrl(instance.value)
+  return url.includes('/hermes/tui') ? url : ''
+})
 
 async function load() {
   if (!auth.isAuthenticated || !auth.idToken || !canManageHermes(auth.groups)) {
@@ -181,10 +105,11 @@ async function load() {
     const data = await fetchHermesInstances(auth.idToken)
     const rows = Array.isArray(data.instances) ? data.instances : []
     instance.value = pickReadyHermesInstance(rows, auth.email)
-    if (dock.open && !canChat.value) chatError.value = t('console.site.dockNotReady')
-  } catch {
+    if (dock.open && !tuiSrc.value) panelError.value = t('console.site.dockNotReady')
+    else panelError.value = ''
+  } catch (err) {
     instance.value = null
-    if (dock.open) chatError.value = t('console.site.dockError')
+    if (dock.open) panelError.value = humanHermesError(err, t('console.site.dockError'))
   }
 }
 
@@ -199,14 +124,12 @@ watch(
 watch(
   () => dock.nonce,
   () => {
-    thread.value = []
-    chatError.value = canChat.value ? '' : t('console.site.dockNotReady')
-    fresh.value = true
+    panelError.value = tuiSrc.value ? '' : t('console.site.dockNotReady')
   }
 )
 
-watch(canChat, (ok) => {
-  if (ok && chatError.value === t('console.site.dockNotReady')) chatError.value = ''
+watch(tuiSrc, (url) => {
+  if (url) panelError.value = ''
 })
 
 onMounted(load)
