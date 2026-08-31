@@ -1,9 +1,24 @@
 # apps/console
 
-Shell do membro. Control plane UI.
+Shell do membro. Control plane UI extraído de `brenon.cloud` (F1.1 / issue #3).
 
-**Status:** não implementado. Nasce na Fase 1 (extração do Vue hoje em `brenon.cloud/src/pages/console` e afins).
+**Intenção:** publicar em `https://console.brenon.cloud` (Swarm + túnel, issues #4–#5). Identidade OIDC client `console` é a issue #6.
 
-Contrato: [SPEC.md](../../SPEC.md) §4.2, [ARCHITECTURE.md](../../ARCHITECTURE.md) §2–3, [docs/roadmap.md](../../docs/roadmap.md) Fases 1–4.
+**Já roda local:** casco Vue 3 + Vite, apex = overview da conta, i18n en+pt. Preview **não** exige login (sessão fixture). Catálogo tenta o control plane e cai no fallback offline.
 
-Alvo de host: `https://console.brenon.cloud` no lab (Swarm + túnel). Depois: HTML no Cloudflare.
+## Local
+
+```bash
+cd apps/console
+npm install
+npm test
+npm run dev
+# http://localhost:5173/  → overview
+npm run build && npm run preview
+```
+
+Voltar ao site da empresa: https://brenon.cloud/ (link absoluto). Bookmarks `/console/...` no site **não** redirecionam neste recorte (issue #8).
+
+## Fora deste recorte
+
+DNS, túnel, 301, OIDC live, CORS/Stripe/GATE_URL.
