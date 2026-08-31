@@ -184,19 +184,20 @@ Depois (roadmap): o HTML do console vai para Cloudflare Pages/Worker. O lab cont
 
 ---
 
-## 7. Dependências que ainda apontam para `brenon.cloud/console`
-
-Inventário para o cutover (código hoje noutros repos):
-
-- Stripe success / cancel / portal return
-- E-mail de boas-vindas
-- `GATE_URL` da home HaaS e footer da página do membro
-- Skills do tenant que citam o console
-- Menu do site (`router-link` interno)
+## 7. Dependências fora do 301 do blog
 
 O 301 no Netlify cobre bookmark. Esta lista **não** passa pelo browser na origem do blog.
 
-CORS do control plane hoje ecoa `https://brenon.cloud`. Precisa ecoar `https://console.brenon.cloud` antes do cutover.
+F1.5 (#7) — cérebro no git do control plane; apply = imagem + env **vivos** + ForceUpdate (nunca PUT compose git com `***`):
+
+- CORS Origin `https://console.brenon.cloud` **aditivo**. `https://brenon.cloud` (e www / localhost) **continua** ecoado até #8.
+- Stripe success / cancel / portal → `https://console.brenon.cloud/billing…` (sem prefixo `/console`).
+- E-mail de boas-vindas, `GATE_URL` (`/host-auth`) e footer da página do membro → host novo, sem `/console` no path.
+
+Ainda no site (F1.6 / #8):
+
+- Skills do tenant que citam o console
+- Menu do site (`router-link` interno)
 
 ---
 
