@@ -1,0 +1,70 @@
+# brenon-console — Swarm contract (issue #4).
+#
+# This file is versioned intent, not an apply.
+# Do not Portainer PUT / docker stack deploy from #4.
+# Public hostname + tunnel + CNAME are #5.
+#
+# Image tag: pin CONSOLE_IMAGE_TAG to sha-<git> or vX.Y.Z before production.
+# `latest` is not the production contract.
+#
+# Networks: overlay by name. No 192.168.x / host IP as the first option.
+# Published port is Swarm ingress (VIP), for a future tunnel to reach the task.
+# Fallback if overlay/VIP cannot be reached: document why, then bind a host port
+# on the labeled node — never lead with a machine address in this file.
+
+version: "3.9"
+
+services:
+  console:
+    image: ghcr.io/brenonaraujo/home-cloud-console:${CONSOLE_IMAGE_TAG:-dev}
+    networks:
+      - console
+    ports:
+      - target: 8080
+        published: 18082
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.vserver == true
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.25"
+        reservations:
+          memory: 16M
+          cpus: "0.05"
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 60s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+      labels:
+        - "home.cloud.app=console"
+        - "traefik.enable=false"
+
+networks:
+  console:
+    driver: overlay
+    attachable: true
