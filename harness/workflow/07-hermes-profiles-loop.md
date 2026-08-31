@@ -60,6 +60,22 @@ O brief **sempre** começa com: comente “peguei” na issue, depois trabalhe.
 
 No máximo **uma** persona `--oneshot` por vez neste repo (cwd compartilhado).
 
+## Relógio e ganchos
+
+Cron `home-cloud-loop` (job `7a1795d9a65d`): **a cada 2 min**.
+Precisa do **Hermes gateway** (`hermes gateway install --start-now`).
+Sem gateway o job não dispara.
+
+O tick **não** chama LLM se o snapshot GitHub não mudou.
+Script: [`../scripts/harness-watch.sh`](../scripts/harness-watch.sh)
+(issues abertas + labels, PRs + SHA, checks, persona `--oneshot` no ar).
+
+GitHub webhook → `localhost:8644` **não** chega da nuvem sem URL
+pública. Sem túnel extra (cerca live), o poll de 2 min **é** o gancho.
+
+Cada tick do LLM tem teto curto (~3 min): só decide e dispara
+`hermes -p … --oneshot` em background. Não espera o builder.
+
 ## Tick do orquestrador (cada ciclo)
 
 1. `gh issue list` + `gh pr list` neste repo.
