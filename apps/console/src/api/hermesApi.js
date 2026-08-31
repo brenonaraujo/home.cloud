@@ -139,21 +139,6 @@ export async function saveHermesProvider(idToken, id, body) {
   return data
 }
 
-export async function sendHermesChat(idToken, message, extra = {}) {
-  const res = await fetch(`${BASE}/api/v1/hermes/chat`, {
-    method: 'POST',
-    headers: { ...authHeaders(idToken), 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message,
-      session: extra.session || '',
-      fresh: extra.fresh === true
-    })
-  })
-  const data = await readJSON(res)
-  if (!res.ok) throw new Error(data.error || `chat ${res.status}`)
-  return data
-}
-
 export function stripAgentPrefix(raw) {
   let s = String(raw || '').toLowerCase().trim()
   while (s.startsWith('agent-')) s = s.slice(6)

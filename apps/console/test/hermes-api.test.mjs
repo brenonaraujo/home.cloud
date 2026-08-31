@@ -67,25 +67,30 @@ describe('hermesTuiUrl', () => {
 })
 
 describe('Hermes dock stays on brenon.cloud', () => {
-  it('does not iframe or link out to the tenant dashboard', () => {
+  it('embeds the instance TUI iframe, not sessions or Vue chat', () => {
     const dock = readFileSync(new URL('../src/components/HermesDock.vue', import.meta.url), 'utf8')
     const page = readFileSync(new URL('../src/pages/console/Hermes.vue', import.meta.url), 'utf8')
-    for (const src of [dock, page]) {
-      assert.equal(src.includes('<iframe'), false)
-      assert.equal(src.includes('hermes/sessions'), false)
-      assert.equal(src.includes('hermes-mascot'), false)
-      assert.equal(/href=.*\/hermes['"]/.test(src), false)
-    }
-    assert.match(dock, /sendHermesChat/)
+    const api = readFileSync(new URL('../src/api/hermesApi.js', import.meta.url), 'utf8')
+    assert.match(dock, /<iframe/)
+    assert.match(dock, /hermesTuiUrl/)
+    assert.match(dock, /\/hermes\/tui/)
+    assert.equal(dock.includes('hermes/sessions'), false)
+    assert.equal(page.includes('hermes/sessions'), false)
+    assert.equal(dock.includes('sendHermesChat'), false)
+    assert.equal(api.includes('sendHermesChat'), false)
+    assert.equal(api.includes('/api/v1/hermes/chat'), false)
+    assert.equal(dock.includes('dockNew'), false)
+    assert.equal(dock.includes('hermes-mascot'), false)
     assert.match(dock, /hermes-fab/)
+    assert.equal(page.includes('<iframe'), false)
   })
 
-  it('keeps the chat panel visible after startChat even if canChat is still false', () => {
+  it('keeps the TUI panel visible after startChat even if canChat is still false', () => {
     const dock = readFileSync(new URL('../src/components/HermesDock.vue', import.meta.url), 'utf8')
     assert.doesNotMatch(dock, /v-if="canChat"/)
     assert.match(dock, /v-if="showDock"/)
     assert.match(dock, /pickReadyHermesInstance/)
-    assert.match(dock, /dockEmptyReply/)
+    assert.doesNotMatch(dock, /dockEmptyReply/)
   })
 })
 
