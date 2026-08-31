@@ -62,19 +62,17 @@ No máximo **uma** persona `--oneshot` por vez neste repo (cwd compartilhado).
 
 ## Relógio e ganchos
 
-Cron `home-cloud-loop` (job `7a1795d9a65d`): **a cada 2 min**.
-Precisa do **Hermes gateway** (`hermes gateway install --start-now`).
-Sem gateway o job não dispara.
+Cron `home-cloud-loop`: **a cada 2 min** o gateway roda
+`harness/scripts/home-cloud-spawn-tm.sh` (**sem LLM no ticker**).
+O script dispara `hermes -p team-manager --oneshot` se ele ainda
+não estiver no ar. O **team-manager** lê o board, comenta, e
+`nohup hermes -p <persona>` nos workers (até 3 em paralelo).
 
-O tick **não** chama LLM se o snapshot GitHub não mudou.
-Script: [`../scripts/harness-watch.sh`](../scripts/harness-watch.sh)
-(issues abertas + labels, PRs + SHA, checks, persona `--oneshot` no ar).
+**Não** use `monitor` neste job: snapshot GitHub estável com
+issues em `triage` **não é idle** — é exatamente quando o
+orquestrador tem de despachar.
 
-GitHub webhook → `localhost:8644` **não** chega da nuvem sem URL
-pública. Sem túnel extra (cerca live), o poll de 2 min **é** o gancho.
-
-Cada tick do LLM tem teto curto (~3 min): só decide e dispara
-`hermes -p … --oneshot` em background. Não espera o builder.
+GitHub webhook → `localhost` não chega. O poll de 2 min é o gancho.
 
 ## Tick do orquestrador (cada ciclo)
 
