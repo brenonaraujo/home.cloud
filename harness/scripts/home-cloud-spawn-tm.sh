@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Cron (no_agent): wake team-manager if it is not already running.
-# Empty stdout when busy so no_agent cron delivers nothing.
+# Always print one line so the cron UI is not "no execution".
 set -euo pipefail
 if pgrep -fl 'hermes -p team-manager' 2>/dev/null | grep -v pgrep >/dev/null; then
+  echo "busy team-manager"
   exit 0
 fi
 ROOT=/Users/araujo/Projects/home.cloud
