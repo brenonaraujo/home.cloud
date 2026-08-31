@@ -1,0 +1,24 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+# Product tags (v0.1.0…), not harness VERSION (1.15.x).
+# Conventional Commits on the squash merge: feat → minor, fix → patch, ! → major.
+# docs/chore/ci/test do not cut a release. See docs/adr/0003-semver-github-release.md
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create GitHub Release from Conventional Commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/semver-release.sh

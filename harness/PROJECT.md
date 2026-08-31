@@ -33,6 +33,12 @@ quality:
 security:
   secrets: ~/.hermes/secrets — never this git
   oidc_clients: [brenon-cloud, console]
+release:
+  on: merge to main
+  spec: Conventional Commits + Semver tag vX.Y.Z + GitHub Release
+  skip: [docs, chore, ci, test, style, refactor]
+  not: harness VERSION file (that is 1.15.x)
+  adr: docs/adr/0003-semver-github-release.md
 ---
 
 # home.cloud — project overlay on git-meta-harness
