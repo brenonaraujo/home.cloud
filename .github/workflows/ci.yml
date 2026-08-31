@@ -40,3 +40,17 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+
+  # Independent of `contracts`. Failure here must not require editing that job.
+  spa-nginx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build console image from platform/spa-nginx
+        run: |
+          docker build -f platform/spa-nginx/Dockerfile \
+            --build-context spa=apps/console \
+            -t home-cloud-console:ci \
+            platform/spa-nginx
+      - name: Smoke health, shell HTML, SPA fallback
+        run: bash platform/spa-nginx/smoke.sh --skip-build --image home-cloud-console:ci --port 18082
