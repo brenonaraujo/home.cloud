@@ -30,7 +30,7 @@ Imagem nginx, stack, túnel, CNAME `console`. Smoke público 200.
 
 ## Fase 3 — ligar o cérebro
 
-Client OIDC `console`. CORS Origin do console no control. Stripe return, e-mail, `GATE_URL`. ForceUpdate do control **sem** colar compose git com senha mascarada.
+Client OIDC `console` (F1.4 / #6). CORS Origin do console no control, Stripe return, e-mail, `GATE_URL` (F1.5 / #7). ForceUpdate do control **sem** colar compose git com senha mascarada. 301 do blog é Fase 4.
 
 ## Fase 4 — o membro muda de URL
 
