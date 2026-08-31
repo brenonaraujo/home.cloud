@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { UserManager } from 'oidc-client-ts'
 import {
+  ENROLLMENT_FLOW,
+  enrollmentContinueUri,
+  identityFailureKind,
   isLiveOidc,
   oidcSettings,
   postLogoutRedirectUri,
@@ -14,10 +17,16 @@ let manager
 let loginStarted = false
 
 function getManager() {
-  if (!manager) {
-    manager = new UserManager(oidcSettings())
-  }
+  if (!manager) manager = new UserManager(oidcSettings())
   return manager
+}
+
+function clearEntitlement() {
+  try {
+    useEntitlementStore().clear()
+  } catch {
+    /* pinia may not be ready in tests */
+  }
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -36,10 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
   const groups = computed(() => {
     const raw = user.value?.profile?.groups || user.value?.profile?.all_groups || ''
     if (Array.isArray(raw)) return raw.filter(Boolean)
-    return String(raw)
-      .split(',')
-      .map((g) => g.trim())
-      .filter(Boolean)
+    return String(raw).split(',').map((g) => g.trim()).filter(Boolean)
   })
 
   async function hydrate() {
@@ -52,8 +58,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const current = await getManager().getUser()
       user.value = current && !current.expired ? current : null
-    } catch (err) {
-      error.value = err?.message || 'auth'
+    } catch {
+      error.value = identityFailureKind('session')
       user.value = null
     } finally {
       ready.value = true
@@ -70,17 +76,22 @@ export const useAuthStore = defineStore('auth', () => {
     const next = typeof returnTo === 'string' && returnTo.startsWith('/') ? returnTo : PATHS.overview
     loginStarted = true
     try {
-      await getManager().signinRedirect({
-        state: { returnTo: next }
-      })
-    } catch (err) {
+      await getManager().signinRedirect({ state: { returnTo: next } })
+    } catch {
       loginStarted = false
-      throw err
+      error.value = identityFailureKind('login_new')
+      throw new Error('login_new')
     }
   }
 
   function signup() {
-    window.location.href = postLogoutRedirectUri()
+    if (!isLiveOidc()) {
+      user.value = PREVIEW_USER
+      ready.value = true
+      return
+    }
+    const next = encodeURIComponent(enrollmentContinueUri())
+    window.location.href = `${ENROLLMENT_FLOW}?next=${next}`
   }
 
   async function completeLogin() {
@@ -98,32 +109,21 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     const home = postLogoutRedirectUri()
+    const hint = user.value?.id_token
+    user.value = null
+    clearEntitlement()
     if (!isLiveOidc()) {
-      user.value = null
-      try {
-        useEntitlementStore().clear()
-      } catch {
-        /* pinia may not be ready in tests */
-      }
       window.location.replace(home)
       return
     }
-    const mgr = getManager()
-    const hint = user.value?.id_token
-    user.value = null
     try {
-      useEntitlementStore().clear()
-    } catch {
-      /* pinia may not be ready in tests */
-    }
-    try {
-      await mgr.signoutRedirect({
+      await getManager().signoutRedirect({
         id_token_hint: hint,
         post_logout_redirect_uri: home
       })
     } catch {
       try {
-        await mgr.removeUser()
+        await getManager().removeUser()
       } catch {
         /* still send them home */
       }

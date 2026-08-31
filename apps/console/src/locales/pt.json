@@ -310,5 +310,12 @@
   },
   "navbar": {
     "logout": "Sair"
+  },
+  "auth": {
+    "signingIn": "Entrando com a identidade da casa…",
+    "completing": "Concluindo o acesso…",
+    "continuing": "Abrindo o console…",
+    "identityError": "A identidade da casa não está disponível para um login novo. Isso não é produto fora do ar.",
+    "retry": "Tentar entrar de novo"
   }
 }

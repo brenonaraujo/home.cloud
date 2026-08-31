@@ -2,8 +2,8 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { isLiveOidc, SITE_HOME, postLogoutRedirectUri } from '../src/config/auth.js'
 
-describe('preview auth (OIDC live is issue #6)', () => {
-  it('does not enable live OIDC in this extract', () => {
+describe('preview auth', () => {
+  it('does not enable live OIDC in node tests', () => {
     assert.equal(isLiveOidc(), false)
   })
 

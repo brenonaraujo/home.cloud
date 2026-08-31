@@ -3,12 +3,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { createI18n } from 'vue-i18n'
 import { useAuthStore } from './stores/authStore'
-import { isLiveOidc } from './config/auth.js'
+import { AUTH_CALLBACK_PATH, AUTH_CONTINUE_PATH, isLiveOidc } from './config/auth.js'
 import { PATHS } from './config/console-paths.mjs'
 import App from './App.vue'
 import './style.css'
 
 import ConsoleLayout from './layouts/ConsoleLayout.vue'
+import AuthCallback from './pages/AuthCallback.vue'
+import AuthContinue from './pages/AuthContinue.vue'
 import ConsoleHome from './pages/console/Home.vue'
 import ConsoleServices from './pages/console/Services.vue'
 import ConsoleService from './pages/console/Service.vue'
@@ -24,6 +26,8 @@ import pt from './locales/pt.json'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: AUTH_CALLBACK_PATH, name: 'auth-callback', component: AuthCallback },
+    { path: AUTH_CONTINUE_PATH, name: 'auth-continue', component: AuthContinue },
     {
       path: PATHS.hostAuth,
       name: 'console-host-auth',
@@ -67,12 +71,13 @@ app.use(router)
 app.use(pinia)
 app.use(i18n)
 
-router.beforeEach(async () => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
   if (!auth.ready) await auth.hydrate()
   if (!isLiveOidc()) return true
+  if (to.path === AUTH_CALLBACK_PATH || to.path === AUTH_CONTINUE_PATH) return true
   if (auth.isAuthenticated) return true
-  await auth.login()
+  await auth.login(to.fullPath)
   return false
 })
 
