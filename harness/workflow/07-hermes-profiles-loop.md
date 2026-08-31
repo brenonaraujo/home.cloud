@@ -79,6 +79,7 @@ GitHub webhook → `localhost` não chega. O poll de 2 min é o gancho.
 1. `gh issue list` + `gh pr list` neste repo.
 2. PR aberto + CI verde + issue `in-progress` → QA.
 3. Issue `qa` + PR mergeable → merge squash (cerca live abaixo) + `done`.
+3b. Issue `qa` **sem PR** + relatório APROVADO → `done` e fecha (spike/infra live). REPROVADO → spawn builder. Não idle.
 4. Issue `ready` sem PR → branch + builder certo (`frontend` / `devops` / `backend`).
 5. Issue `refined` → architect.
 6. Issue `triage` + `type/feature` → domain-expert-home-cloud.

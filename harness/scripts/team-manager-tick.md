@@ -29,6 +29,9 @@ comentário team-manager nessa issue já diz a mesma coisa.
    - ready → branch `feature/<id>-<slug>` + builder
    - in-progress + PR + CI verde → quality-assurance
    - qa + PR mergeable neste git → squash merge, `done`, fecha
+   - qa + SEM PR + último relatório **APROVADO** → `done`, fecha (spike/infra live). Não idle.
+   - qa + SEM PR + último relatório **REPROVADO** → spawn builder. Não idle.
+   - `qa` aberta > 15 min sem worker = ação, não idle.
 6. Até 3 workers. `nohup hermes -p <perfil> chat --oneshot --in /Users/araujo/Projects/home.cloud --query-file /tmp/hc-<id>.md >>/tmp/hc-<id>.log 2>&1 &`
    Brief: PRIMEIRO comente **peguei**. Não feche, não mergeie.
 7. Cerca: não apagar túnel/hostname existente, não 301 Netlify, não PUT compose mascarado.
