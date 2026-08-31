@@ -29,10 +29,15 @@ describe('shell visual language — mobile + tokens', () => {
     assert.match(search, /(?:min-h-\[44px\]|h-11)/)
   })
 
-  it('hides secondary topbar chrome on the phone so 375px does not clip', () => {
+  it('hides secondary topbar chrome below lg so 768px stays usable with the hamburger', () => {
     const topbar = src('components/console/ConsoleTopbar.vue')
-    assert.match(topbar, /hidden[\s\S]*sm:inline-flex/)
-    assert.match(topbar, /sm:flex/)
+    assert.match(topbar, /lg:hidden/)
+    assert.match(topbar, /hidden[\s\S]*lg:inline-flex/)
+    assert.match(topbar, /lg:flex/)
+    assert.match(topbar, /hidden[\s\S]*lg:block/)
+    assert.doesNotMatch(topbar, /sm:inline-flex/)
+    assert.doesNotMatch(topbar, /sm:flex/)
+    assert.doesNotMatch(topbar, /hidden sm:block/)
   })
 
   it('closes the drawer with Escape', () => {

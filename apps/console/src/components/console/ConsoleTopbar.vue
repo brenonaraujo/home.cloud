@@ -9,22 +9,19 @@
       <MenuIcon class="h-5 w-5" />
     </button>
 
-    <div class="hidden min-w-0 flex-1 lg:block">
-      <ConsoleSearch />
-    </div>
-    <div class="min-w-0 flex-1 lg:hidden">
+    <div class="min-w-0 flex-1">
       <ConsoleSearch />
     </div>
 
     <a
       :href="SITE_HOME"
-      class="hidden min-h-[44px] shrink-0 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-gray-200 transition-colors hover:border-white/30 hover:bg-white/5 hover:text-white sm:inline-flex"
+      class="hidden min-h-[44px] shrink-0 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-gray-200 transition-colors hover:border-white/30 hover:bg-white/5 hover:text-white lg:inline-flex"
     >
       <ArrowLeftIcon class="h-4 w-4" />
       <span>{{ t('console.nav.backToSite') }}</span>
     </a>
 
-    <div class="hidden items-center gap-2 sm:flex">
+    <div class="hidden items-center gap-2 lg:flex">
       <span
         class="rounded border border-white/10 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-gray-400"
         :title="t('console.regionHint')"
@@ -36,7 +33,7 @@
       </span>
     </div>
 
-    <div class="hidden sm:block">
+    <div class="hidden lg:block">
       <LanguageSelector />
     </div>
 
@@ -65,7 +62,7 @@
         <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
           {{ initials }}
         </span>
-        <span class="hidden max-w-[9rem] truncate sm:inline">{{ auth.displayName }}</span>
+        <span class="hidden max-w-[9rem] truncate lg:inline">{{ auth.displayName }}</span>
       </button>
       <div
         v-if="menuOpen"

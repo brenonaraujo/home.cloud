@@ -22,7 +22,7 @@
         @keydown.up.prevent="move(-1)"
       />
       <kbd
-        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-gray-500 sm:inline"
+        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-gray-500 lg:inline"
       >
         {{ modifier }}K
       </kbd>
