@@ -1,0 +1,22 @@
+name: Infra
+description: "Túnel, Swarm, DNS, CI. Pula domain-expert."
+labels: ["triage", "type/infra"]
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Conteúdo
+      description: "O que muda na borda ou orquestração."
+      value: |
+        ## Resumo
+
+        ## Critérios de aceite
+
+        - [ ] Smoke LAN
+        - [ ] Smoke público (se hostname)
+
+        ## Blast radius
+
+        control plane / data plane / borda
+    validations:
+      required: true

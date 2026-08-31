@@ -1,0 +1,33 @@
+name: Feature
+description: "Feature de negócio (entra domain-expert-home-cloud)"
+labels: ["triage", "type/feature", "domain/home-cloud"]
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Conteúdo
+      description: "Preencha a história. O domain-expert refina os ACs."
+      value: |
+        ## Resumo
+
+        ## User story
+
+        **Como** <persona>,
+        **quero** <ação>,
+        **para que** <benefício>.
+
+        ## Critérios de aceite
+
+        - [ ] AC1
+        - [ ] AC2
+
+        ## Edge cases
+
+        - E1
+
+        ## SpecRef
+
+        - SPEC.md §
+        - docs/taxonomy.md
+    validations:
+      required: true

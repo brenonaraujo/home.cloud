@@ -1,0 +1,12 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**', '*.md', 'harness/**/*.md']
+infra:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', 'deploy/**', 'platform/**']
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: ['apps/console/**']
+backend:
+  - changed-files:
+      - any-glob-to-any-file: ['apps/control/**']

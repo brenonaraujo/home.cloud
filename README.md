@@ -22,6 +22,8 @@ Implementação de referência em produção (lab Brenon): identidade, catálogo
 
 Se só tiver dois minutos: leia o diagrama em [ARCHITECTURE.md](./ARCHITECTURE.md) e a tabela de taxonomia.
 
+**Implementação** é orquestrada pelo [git-meta-harness](https://github.com/brenonaraujo/git-meta-harness) (v1.15). Overlay: [harness/PROJECT.md](./harness/PROJECT.md). Não comece código em `apps/` sem issue `ready`.
+
 ## O que este repo é
 
 - A **fundação** (Control Tower / landing zone), não o universo de produtos.
