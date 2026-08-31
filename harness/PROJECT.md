@@ -106,3 +106,19 @@ Landing zone de uma home cloud (control plane ≠ data plane). Console do membro
 ## Human approval
 
 Sempre: DNS de zona, túnel PUT, Stripe live, `--wave` IdP, merge em `main` com cutover 301, criar tenant de verdade.
+
+## Backlog v0.1.0
+
+Marco: https://github.com/brenonaraujo/home.cloud/milestone/1
+
+| Issue | Recorte |
+|-------|---------|
+| [#2](https://github.com/brenonaraujo/home.cloud/issues/2) | Épico F1 console no lab |
+| [#3](https://github.com/brenonaraujo/home.cloud/issues/3) | F1.1 extrair Vue → `apps/console` |
+| [#4](https://github.com/brenonaraujo/home.cloud/issues/4) | F1.2 nginx + Swarm |
+| [#5](https://github.com/brenonaraujo/home.cloud/issues/5) | F1.3 túnel + CNAME |
+| [#6](https://github.com/brenonaraujo/home.cloud/issues/6) | F1.4 OIDC `console` |
+| [#7](https://github.com/brenonaraujo/home.cloud/issues/7) | F1.5 CORS / Stripe / GATE_URL |
+| [#8](https://github.com/brenonaraujo/home.cloud/issues/8) | F1.6 301 no site |
+
+Cadeia: #3 bloqueia #4 bloqueia #5 bloqueia #6 bloqueia #7 bloqueia #8. Sem GO em `apps/` até ARCHITECTURE.md §9.
