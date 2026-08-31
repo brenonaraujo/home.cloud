@@ -74,6 +74,10 @@ Corte de URL no site (Netlify, não o app console):
 
 Rotas **dentro** do app console não usam prefixo `/console`. Apex `/` é o overview.
 
+### 2.1 Shell único, dois hosts
+
+A API do control permanece em `control.brenon.cloud`. A superfície staff **parece** o console (tokens cinza/azul, drawer no telefone, tap ≥ 44px). Control é serviço de plataforma, não páginas do membro no Vue. **Não fundir git.** 301 `/console` no site **não está neste GO** (#8 parked).
+
 ---
 
 ## 3. Identidade

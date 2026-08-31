@@ -83,6 +83,8 @@ Lê este repositório para montar uma casa parecida. Não usa a nuvem Brenon. Us
 
 **Não faz:** ser o blog; ser o admin do provedor de identidade para o membro comum; fingir fatura ou instância.
 
+**Shell único, dois hosts:** o membro entra em `console.brenon.cloud`. A API e a UI staff ficam em `control.brenon.cloud`. Mesmo idioma visual. Sem fundir git. Sem 301 neste GO.
+
 ### 4.3 Plataforma (invisível para o visitante, visível para o operador)
 
 - Uma identidade para todos os consoles da casa.
@@ -137,7 +139,7 @@ Como membro no plano livre, não quero ver admin de identidade nem orquestraçã
 ### Operador vê plataforma
 
 Como operador, quero os consoles de plataforma no mesmo shell, para não ter um favorito por ferramenta.  
-**Aceite:** tiles de plataforma aparecem só para grupos de staff definidos no catálogo.
+**Aceite:** tiles de plataforma aparecem só para grupos de staff definidos no catálogo. Tile Control só staff, destino `https://control.brenon.cloud`. Plano pago não revela operação. **Shell único, dois hosts** — mesmo idioma visual no telefone (375 / 768 / 1280). Sem 301. Sem fundir git.
 
 ### Tenant sobrevive ao console
 

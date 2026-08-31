@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="auth.ready && auth.isAuthenticated"
-    class="flex h-screen min-h-0 overflow-hidden bg-gray-950 text-gray-100"
+    class="flex h-screen min-h-0 overflow-hidden overflow-x-hidden bg-gray-950 text-gray-100"
   >
     <a
       href="#console-main"
@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { SITE_HOME } from '../config/console-paths.mjs'
@@ -52,9 +52,15 @@ const catalog = useConsoleStore()
 const entitlement = useEntitlementStore()
 const sidebarOpen = ref(false)
 
+const onKey = (event) => {
+  if (event.key === 'Escape') sidebarOpen.value = false
+}
+
 onMounted(() => {
   if (auth.isAuthenticated) catalog.load()
+  window.addEventListener('keydown', onKey)
 })
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 watch(
   () => [auth.ready, auth.email, auth.idToken],

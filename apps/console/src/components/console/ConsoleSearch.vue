@@ -10,7 +10,7 @@
         type="search"
         autocomplete="off"
         :placeholder="t('console.search.placeholder')"
-        class="h-10 w-full rounded-md border border-white/10 bg-gray-900 py-2 pl-10 pr-16 text-sm text-white placeholder:text-gray-500 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+        class="h-11 w-full rounded-md border border-white/10 bg-gray-900 py-2 pl-10 pr-16 text-sm text-white placeholder:text-gray-500 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
         role="combobox"
         aria-autocomplete="list"
         :aria-expanded="open"

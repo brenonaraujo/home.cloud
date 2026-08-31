@@ -196,6 +196,9 @@
             </a>
           </li>
         </ul>
+        <div class="mt-4 px-1 lg:hidden">
+          <LanguageSelector />
+        </div>
       </div>
     </aside>
   </div>
@@ -213,6 +216,7 @@ import {
   canManageHermes,
   isHermesSubscriber
 } from '../../config/console-taxonomy.mjs'
+import LanguageSelector from '../ui/LanguageSelector.vue'
 import {
   ArrowLeftIcon,
   BellIcon,

@@ -1,5 +1,5 @@
 <template>
-  <header class="flex h-14 shrink-0 items-center gap-4 border-b border-white/10 bg-gray-950/90 px-4 backdrop-blur">
+  <header class="flex h-14 min-w-0 shrink-0 items-center gap-2 overflow-hidden border-b border-white/10 bg-gray-950/90 px-4 backdrop-blur sm:gap-4">
     <button
       type="button"
       class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-gray-300 hover:bg-white/5 hover:text-white lg:hidden"
@@ -12,17 +12,16 @@
     <div class="hidden min-w-0 flex-1 lg:block">
       <ConsoleSearch />
     </div>
-    <div class="flex-1 lg:hidden">
+    <div class="min-w-0 flex-1 lg:hidden">
       <ConsoleSearch />
     </div>
 
     <a
       :href="SITE_HOME"
-      class="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-gray-200 transition-colors hover:border-white/30 hover:bg-white/5 hover:text-white"
+      class="hidden min-h-[44px] shrink-0 items-center gap-2 rounded-md border border-white/15 px-3 text-sm text-gray-200 transition-colors hover:border-white/30 hover:bg-white/5 hover:text-white sm:inline-flex"
     >
       <ArrowLeftIcon class="h-4 w-4" />
-      <span class="hidden sm:inline">{{ t('console.nav.backToSite') }}</span>
-      <span class="sm:hidden">{{ t('console.nav.site') }}</span>
+      <span>{{ t('console.nav.backToSite') }}</span>
     </a>
 
     <div class="hidden items-center gap-2 sm:flex">
@@ -37,7 +36,9 @@
       </span>
     </div>
 
-    <LanguageSelector />
+    <div class="hidden sm:block">
+      <LanguageSelector />
+    </div>
 
     <router-link
       to="/notifications"
@@ -56,7 +57,7 @@
     <div class="relative" ref="menuRoot">
       <button
         type="button"
-        class="inline-flex items-center gap-2 rounded-md border border-white/10 px-2 py-1 text-sm text-gray-200 transition-colors hover:border-white/20 hover:text-white"
+        class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-white/10 px-2 py-1 text-sm text-gray-200 transition-colors hover:border-white/20 hover:text-white"
         :aria-expanded="menuOpen"
         aria-haspopup="menu"
         @click.stop="menuOpen = !menuOpen"

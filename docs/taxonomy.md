@@ -58,6 +58,8 @@ Criar/apagar tenant = control plane. Usar tenant já criado = data plane.
 
 O membro *vê* produtos através dele. Se o console 502 e o Draw abre, a taxonomia está certa.
 
+**Shell único, dois hosts:** `console.brenon.cloud` (porta do membro) e `control.brenon.cloud` (catálogo / billing / provision + UI staff). Mesmo idioma visual. Staff ≠ cliente. Control down ≠ data plane down.
+
 ## Marca
 
 `brnn.cloud` — linha de produto (aws.amazon.com). Não substitui `brenon.cloud`. Não entra na tabela de plataforma até hospedar um serviço de plataforma de verdade (hoje: alias do console, landing).
