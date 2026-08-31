@@ -122,3 +122,11 @@ Marco: https://github.com/brenonaraujo/home.cloud/milestone/1
 | [#8](https://github.com/brenonaraujo/home.cloud/issues/8) | F1.6 301 no site |
 
 Cadeia: #3 bloqueia #4 bloqueia #5 bloqueia #6 bloqueia #7 bloqueia #8. Sem GO em `apps/` até ARCHITECTURE.md §9.
+
+## Loop Hermes (obrigatório)
+
+Runtime: profiles em `~/.hermes/profiles/<persona>`. Orquestrador = este chat (`default`) + cron `home-cloud-loop`.
+
+Contrato: [`workflow/07-hermes-profiles-loop.md`](./workflow/07-hermes-profiles-loop.md).
+
+Toda persona **comenta na issue antes de trabalhar**. Handoff só via `team-manager`. Uma persona `--oneshot` por vez. Cerca live: não migrar `brenon.cloud/console`.
