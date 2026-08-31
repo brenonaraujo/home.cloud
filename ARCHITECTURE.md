@@ -2,7 +2,7 @@
 
 Contrato técnico da landing zone. Comportamento está em [SPEC.md](./SPEC.md). Invariantes em [FOUNDATIONS.md](./FOUNDATIONS.md).
 
-**Nada disto está implementado neste repositório ainda.** O lab Brenon já opera várias destas peças em outros repos; este documento é o alvo consciente.
+**Status (2026-08):** o console do membro está em `https://console.brenon.cloud` (Swarm + túnel). Control e IdP continuam nos git do lab. 301 `/console` no site **não** está neste GO.
 
 ---
 
