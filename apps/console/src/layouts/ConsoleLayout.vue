@@ -25,7 +25,11 @@
     </div>
     <HermesDock />
   </div>
-  <div v-else class="min-h-screen bg-gray-950" aria-hidden="true" />
+  <div v-else class="flex min-h-screen items-center justify-center bg-gray-950 px-4 text-gray-100">
+    <p role="status" class="max-w-md text-center text-sm text-gray-300">
+      {{ auth.error ? t('auth.identityError') : t('auth.signingIn') }}
+    </p>
+  </div>
 </template>
 
 <script setup>

@@ -310,5 +310,12 @@
   },
   "navbar": {
     "logout": "Sign out"
+  },
+  "auth": {
+    "signingIn": "Signing in with your house identity…",
+    "completing": "Finishing sign-in…",
+    "continuing": "Opening the console…",
+    "identityError": "House identity is unavailable for a new login. This is not a product outage.",
+    "retry": "Try signing in again"
   }
 }
