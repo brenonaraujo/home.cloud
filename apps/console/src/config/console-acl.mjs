@@ -5,7 +5,22 @@
  *
  * groups: ['*'] = any signed-in account. Otherwise overlap with the
  * session's Authentik groups (all_groups / groups claim).
+ * Control is never '*': staff group only, never a paid plan.
  */
+
+export const CONTROL_HOST = 'control.brenon.cloud'
+export const CONTROL_URL = 'https://control.brenon.cloud'
+
+export function isControlService(svc) {
+  const id = String(svc?.id || '').toLowerCase()
+  if (id === 'control') return true
+  const raw = String(svc?.url || svc?.launchUrl || '')
+  try {
+    return new URL(raw).hostname.toLowerCase() === CONTROL_HOST
+  } catch {
+    return false
+  }
+}
 
 export function normalizeCatalogService(raw) {
   if (!raw || typeof raw !== 'object') return null
@@ -42,6 +57,11 @@ export function visibleForGroups(services, userGroups) {
   const have = new Set((userGroups || []).map((g) => String(g).toLowerCase()))
   return (services || []).filter((svc) => {
     const groups = svc.groups || []
+    if (isControlService(svc)) {
+      const explicit = groups.filter((g) => g !== '*')
+      if (!explicit.length) return false
+      return explicit.some((g) => have.has(String(g).toLowerCase()))
+    }
     if (groups.includes('*')) return true
     return groups.some((g) => have.has(String(g).toLowerCase()))
   })

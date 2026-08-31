@@ -10,7 +10,7 @@
         type="search"
         autocomplete="off"
         :placeholder="t('console.search.placeholder')"
-        class="h-10 w-full rounded-md border border-white/10 bg-gray-900 py-2 pl-10 pr-16 text-sm text-white placeholder:text-gray-500 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+        class="h-11 w-full rounded-md border border-white/10 bg-gray-900 py-2 pl-10 pr-16 text-sm text-white placeholder:text-gray-500 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
         role="combobox"
         aria-autocomplete="list"
         :aria-expanded="open"
@@ -22,7 +22,7 @@
         @keydown.up.prevent="move(-1)"
       />
       <kbd
-        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-gray-500 sm:inline"
+        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-gray-500 lg:inline"
       >
         {{ modifier }}K
       </kbd>
