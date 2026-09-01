@@ -162,6 +162,12 @@ export function pickReadyHermesInstance(rows, email) {
   return ready.find((row) => row.email === email) || ready[0] || null
 }
 
+export function retainLiveInstance(current, next, catalogOk) {
+  if (next?.ready && next?.hostname) return next
+  if (!catalogOk && current?.ready && current?.hostname) return current
+  return next || null
+}
+
 export function hermesTuiUrl(instance) {
   const explicit = String(instance?.tuiUrl || '').trim()
   if (explicit) return explicit
