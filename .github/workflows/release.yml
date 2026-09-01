@@ -237,5 +237,6 @@ jobs:
             echo "::error::secret PORTAINER_WEBHOOK_CONSOLE is empty (URL never belongs in git)"
             exit 1
           fi
-          curl -fsS -X POST "$PORTAINER_WEBHOOK_CONSOLE"
+          # Cloudflare on portainer.brenon.cloud returns 1010 without a browser UA.
+          curl -fsS -A "Mozilla/5.0" -X POST "$PORTAINER_WEBHOOK_CONSOLE"
           echo "webhook posted after digest ${{ needs.publish.outputs.digest }}"
