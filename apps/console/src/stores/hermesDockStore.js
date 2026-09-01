@@ -6,7 +6,6 @@ export const useHermesDockStore = defineStore('hermesDock', () => {
   const nonce = ref(0)
 
   function startChat() {
-    nonce.value += 1
     open.value = true
   }
 

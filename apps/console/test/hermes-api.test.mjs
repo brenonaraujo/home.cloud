@@ -92,6 +92,18 @@ describe('Hermes dock stays on brenon.cloud', () => {
     assert.match(dock, /pickReadyHermesInstance/)
     assert.doesNotMatch(dock, /dockEmptyReply/)
   })
+
+  it('keeps the TUI iframe mounted when the dock is minimized', () => {
+    const dock = readFileSync(new URL('../src/components/HermesDock.vue', import.meta.url), 'utf8')
+    const store = readFileSync(new URL('../src/stores/hermesDockStore.js', import.meta.url), 'utf8')
+    assert.doesNotMatch(dock, /v-if="dock\.open"/)
+    assert.match(dock, /is-hidden/)
+    assert.match(dock, /visibility:\s*hidden/)
+    assert.doesNotMatch(dock, /display:\s*none/)
+    assert.match(store, /function startChat\(\) \{\n    open\.value = true/)
+    assert.doesNotMatch(store, /function startChat\(\) \{\s*nonce\.value \+= 1/)
+    assert.match(store, /function restart\(\) \{\n    nonce\.value \+= 1/)
+  })
 })
 
 describe('Hermes TUI button (#21)', () => {
