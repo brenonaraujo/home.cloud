@@ -81,7 +81,8 @@ import {
   fetchHermesInstances,
   hermesTuiUrl,
   humanHermesError,
-  pickReadyHermesInstance
+  pickReadyHermesInstance,
+  retainLiveInstance
 } from '../api/hermesApi.js'
 import HermesDockSessions from './HermesDockSessions.vue'
 
@@ -107,11 +108,15 @@ async function load() {
   try {
     const data = await fetchHermesInstances(auth.idToken)
     const rows = Array.isArray(data.instances) ? data.instances : []
-    instance.value = pickReadyHermesInstance(rows, auth.email)
+    instance.value = retainLiveInstance(
+      instance.value,
+      pickReadyHermesInstance(rows, auth.email),
+      true
+    )
     if (dock.open && !tuiSrc.value) panelError.value = t('console.site.dockNotReady')
     else panelError.value = ''
   } catch (err) {
-    instance.value = null
+    instance.value = retainLiveInstance(instance.value, null, false)
     if (dock.open) panelError.value = humanHermesError(err, t('console.site.dockError'))
   }
 }
@@ -181,16 +186,14 @@ onMounted(load)
 .hermes-panel {
   box-shadow: 0 24px 64px rgb(0 0 0 / 0.45);
   transform-origin: bottom right;
-  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1), transform 280ms cubic-bezier(0.22, 1, 0.36, 1), visibility 280ms;
+  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1), transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .hermes-panel.is-hidden {
-  visibility: hidden;
   opacity: 0;
   pointer-events: none;
   transform: translateY(12px) scale(0.94);
 }
 .hermes-panel.is-open {
-  visibility: visible;
   opacity: 1;
 }
 .hermes-x {

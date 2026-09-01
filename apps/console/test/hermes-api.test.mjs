@@ -98,7 +98,7 @@ describe('Hermes dock stays on brenon.cloud', () => {
     const store = readFileSync(new URL('../src/stores/hermesDockStore.js', import.meta.url), 'utf8')
     assert.doesNotMatch(dock, /v-if="dock\.open"/)
     assert.match(dock, /is-hidden/)
-    assert.match(dock, /visibility:\s*hidden/)
+    assert.doesNotMatch(dock, /visibility:\s*hidden/)
     assert.doesNotMatch(dock, /display:\s*none/)
     assert.match(store, /function startChat\(\) \{\n    open\.value = true/)
     assert.doesNotMatch(store, /function startChat\(\) \{\s*nonce\.value \+= 1/)
