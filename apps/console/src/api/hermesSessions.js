@@ -48,11 +48,9 @@ export function hermesSessionsApiUrl(instance) {
 
 export function classifyHermesSurfaceError(err, extra = {}) {
   if (!extra.hasInstance) return 'instance'
+  if (extra.consoleUnreachable && extra.tenantUnreachable) return 'edge'
   const msg = String(err?.message || err || '')
-  const status = Number(err?.status || 0)
-  if (/failed to fetch|networkerror|load failed/i.test(msg)) return 'edge'
   if (/control\.brenon\.cloud/i.test(msg)) return 'console'
-  if (status >= 500 || /tenant/i.test(msg)) return 'tenant'
   return 'tenant'
 }
 

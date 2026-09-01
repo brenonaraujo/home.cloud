@@ -96,15 +96,44 @@ describe('classifyHermesSurfaceError', () => {
   it('names console, tenant, edge, or missing instance', () => {
     assert.equal(classifyHermesSurfaceError(null, { hasInstance: false }), 'instance')
     assert.equal(
-      classifyHermesSurfaceError(new Error('Failed to fetch'), { hasInstance: true }),
-      'edge'
-    )
-    assert.equal(
       classifyHermesSurfaceError(new Error('control.brenon.cloud 502'), { hasInstance: true }),
       'console'
     )
     assert.equal(
       classifyHermesSurfaceError(Object.assign(new Error('tenant 502'), { status: 502 }), {
+        hasInstance: true
+      }),
+      'tenant'
+    )
+    assert.equal(
+      classifyHermesSurfaceError(new Error('Failed to fetch'), {
+        hasInstance: true,
+        consoleUnreachable: true,
+        tenantUnreachable: true
+      }),
+      'edge'
+    )
+  })
+
+  it('does not classify Failed to fetch on the sessions GET as edge', () => {
+    assert.equal(
+      classifyHermesSurfaceError(new Error('Failed to fetch'), { hasInstance: true }),
+      'tenant'
+    )
+    assert.equal(
+      classifyHermesSurfaceError(new Error('NetworkError when attempting to fetch resource.'), {
+        hasInstance: true
+      }),
+      'tenant'
+    )
+    assert.equal(
+      classifyHermesSurfaceError(Object.assign(new Error('tenant 401'), { status: 401 }), {
+        hasInstance: true
+      }),
+      'tenant'
+    )
+    assert.equal(
+      classifyHermesSurfaceError(Object.assign(new Error('tenant 302'), { status: 302 }), {
         hasInstance: true
       }),
       'tenant'
@@ -142,6 +171,15 @@ describe('fetchHermesNativeSessions', () => {
     assert.equal(out.kind, 'instance')
     assert.equal(hermesMetricCounts().refuse, 1)
     assert.equal(hermesMetricCounts().list, 0)
+  })
+
+  it('classifies Failed to fetch from the tenant sessions GET as tenant, not edge', async () => {
+    const fetchImpl = async () => {
+      throw new Error('Failed to fetch')
+    }
+    const out = await fetchHermesNativeSessions(mine, fetchImpl)
+    assert.deepEqual(out.sessions, [])
+    assert.equal(out.kind, 'tenant')
   })
 })
 
