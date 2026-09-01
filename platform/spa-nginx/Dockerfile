@@ -30,7 +30,10 @@ RUN npm run build
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 
 USER root
+# CVE-2026-31789: nginx-unprivileged:1.27-alpine ships openssl 3.3.3-r0.
+# Trivy CRITICAL gate requires 3.3.7-r0 (libcrypto3 + libssl3). Do not drop the gate.
 RUN apk add --no-cache wget \
+    && apk upgrade --no-cache libcrypto3 libssl3 \
     && rm -rf /var/cache/apk/*
 
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
