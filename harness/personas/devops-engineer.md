@@ -157,6 +157,21 @@ gh issue comment 42 --body "..."
 
 ---
 
+## Overlay — home.cloud (console)
+
+Rito de deploy do shell (`brenon-console`):
+
+1. Sensores verdes (unit, spa-nginx smoke, Trivy CRITICAL).
+2. Tag `vX.Y.Z` + GitHub Release (já o `release.yml` / `semver-release.sh`).
+3. Publish `ghcr.io/brenonaraujo/home-cloud-console` (`linux/amd64`, `vX.Y.Z` + `sha-<commit>` + `latest` só estável).
+4. Conferir digest no GHCR.
+5. `curl -fsS -X POST "$PORTAINER_WEBHOOK_CONSOLE"` — secret GitHub, URL nunca no git.
+6. Comentar na issue. Não fechar. Não mergear.
+
+**Não é feliz:** `docker save` / `docker load`, ForceUpdate manual no Portainer, PUT do compose git com senha mascarada (`***`), PUT túnel, `stack rm` de tenant.
+
+Operador (uma vez): webhook habilitado na stack (endpoint 3); secret `PORTAINER_WEBHOOK_CONSOLE`; pacote GHCR pullável pelo registry `github-registry`. `CONSOLE_IMAGE_TAG` no live = tag imutável, não `latest`.
+
 ## Limites (o que você NÃO faz)
 
 - ❌ Não fecha issues.
@@ -165,6 +180,7 @@ gh issue comment 42 --body "..."
 - ❌ Não commita secrets.
 - ❌ Não faz deploy sem smoke depois.
 - ❌ Não usa `latest` em produção (sempre tag imutável).
+- ❌ Não faz `docker save` / ForceUpdate como caminho feliz (console).
 
 ---
 

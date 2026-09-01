@@ -36,6 +36,10 @@ security:
 release:
   on: merge to main
   spec: Conventional Commits + Semver tag vX.Y.Z + GitHub Release
+  ghcr: ghcr.io/brenonaraujo/home-cloud-console
+  ghcr_tags: [vX.Y.Z, sha-<commit>, latest-if-stable]
+  platform: linux/amd64
+  deploy: POST secrets.PORTAINER_WEBHOOK_CONSOLE after digest (stack brenon-console)
   skip: [docs, chore, ci, test, style, refactor]
   not: harness VERSION file (that is 1.15.x)
   adr: docs/adr/0003-semver-github-release.md
@@ -128,6 +132,10 @@ Marco: https://github.com/brenonaraujo/home.cloud/milestone/1
 | [#8](https://github.com/brenonaraujo/home.cloud/issues/8) | F1.6 301 no site |
 
 Cadeia: #3 bloqueia #4 bloqueia #5 bloqueia #6 bloqueia #7 bloqueia #8. Sem GO em `apps/` até ARCHITECTURE.md §9.
+
+## Release + CD (console)
+
+Tag `vX.Y.Z` (merge `feat`/`fix`) → sensores → GHCR `home-cloud-console` → digest → webhook Portainer. Secret `PORTAINER_WEBHOOK_CONSOLE` só no GitHub. Sem `docker save` / ForceUpdate como rito. Sem PUT compose git com `***`. Detalhe: [`workflow/06-release-pipeline.md`](./workflow/06-release-pipeline.md) overlay home.cloud.
 
 ## Loop Hermes (obrigatório)
 

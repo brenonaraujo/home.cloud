@@ -1,10 +1,13 @@
-# brenon-console — Swarm contract (issue #4).
+# brenon-console — Swarm contract (issues #4, #26).
 #
 # This file is versioned intent, not an apply.
-# Do not Portainer PUT / docker stack deploy from #4.
-# Public hostname + tunnel + CNAME are #5.
+# Do not Portainer PUT this git file when live env is masked (***).
+# CD happy path: GHCR publish then POST Portainer webhook (secret
+# PORTAINER_WEBHOOK_CONSOLE). Not docker save / ForceUpdate.
+# Public hostname + tunnel + CNAME are #5 (do not PUT tunnel here).
 #
-# Image tag: pin CONSOLE_IMAGE_TAG to sha-<git> or vX.Y.Z before production.
+# Image: ghcr.io/brenonaraujo/home-cloud-console:${CONSOLE_IMAGE_TAG}
+# Pin CONSOLE_IMAGE_TAG to vX.Y.Z or sha-<git> in Portainer env.
 # `latest` is not the production contract.
 #
 # Networks: overlay by name. No 192.168.x / host IP as the first option.

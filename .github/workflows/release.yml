@@ -3,22 +3,239 @@ name: release
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing vMAJOR.MINOR.PATCH to publish (no new GitHub Release)
+        required: false
+        default: ''
+
+concurrency:
+  group: release-console
+  cancel-in-progress: false
 
 permissions:
   contents: write
+  packages: write
+  security-events: write
 
 # Product tags (v0.1.0…), not harness VERSION (1.15.x).
 # Conventional Commits on the squash merge: feat → minor, fix → patch, ! → major.
 # docs/chore/ci/test do not cut a release. See docs/adr/0003-semver-github-release.md
+#
+# GITHUB_TOKEN tag create does not re-trigger workflows. Console GHCR + webhook
+# run in this same workflow after the tag exists (or on an exact tag push).
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: brenonaraujo/home-cloud-console
 
 jobs:
   github-release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.cut.outputs.tag }}
+      created: ${{ steps.cut.outputs.created }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Create GitHub Release from Conventional Commit
+        id: cut
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/semver-release.sh
+        run: |
+          set -euo pipefail
+          out="$(bash .github/scripts/semver-release.sh | tee /dev/stderr)"
+          tag="$(printf '%s\n' "$out" | sed -nE 's/^created (v[0-9]+\.[0-9]+\.[0-9]+)$/\1/p' | tail -1)"
+          if [ -n "$tag" ]; then
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            echo "created=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "created=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  resolve-tag:
+    needs: [github-release]
+    if: |
+      always() &&
+      !cancelled() &&
+      (
+        (needs.github-release.result == 'success' && needs.github-release.outputs.created == 'true') ||
+        (needs.github-release.result == 'skipped' && github.event_name == 'push' && github.ref_type == 'tag') ||
+        (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+      )
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.t.outputs.tag }}
+      sha_short: ${{ steps.t.outputs.sha_short }}
+      latest: ${{ steps.t.outputs.latest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.sha }}
+      - name: Resolve exact vMAJOR.MINOR.PATCH
+        id: t
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="${{ needs.github-release.outputs.tag }}"
+          fi
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::refusing non-semver tag '$TAG' (want vMAJOR.MINOR.PATCH)"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "sha_short=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "latest=true" >> "$GITHUB_OUTPUT"
+
+  sensors:
+    needs: [resolve-tag]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.sha }}
+      - name: contracts exist
+        run: |
+          test -f SPEC.md
+          test -f ARCHITECTURE.md
+          test -f harness/PROJECT.md
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/console/package-lock.json
+      - name: unit
+        working-directory: apps/console
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Build console image
+        run: |
+          docker build -f platform/spa-nginx/Dockerfile \
+            --build-context spa=apps/console \
+            -t home-cloud-console:ci \
+            platform/spa-nginx
+      - name: Smoke spa-nginx
+        run: bash platform/spa-nginx/smoke.sh --skip-build --image home-cloud-console:ci --port 18082
+      - name: Trivy image scan (block CRITICAL)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: home-cloud-console:ci
+          format: table
+          severity: CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+
+  publish:
+    needs: [resolve-tag, sensors]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      digest: ${{ steps.verify.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.sha }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tags
+        id: tags
+        env:
+          TAG: ${{ needs.resolve-tag.outputs.tag }}
+          SHA_SHORT: ${{ needs.resolve-tag.outputs.sha_short }}
+          LATEST: ${{ needs.resolve-tag.outputs.latest }}
+        run: |
+          set -euo pipefail
+          img="${REGISTRY}/${IMAGE_NAME}"
+          {
+            echo "${img}:${TAG}"
+            echo "${img}:sha-${SHA_SHORT}"
+            if [ "$LATEST" = "true" ]; then
+              echo "${img}:latest"
+            fi
+          } > /tmp/tags.txt
+          echo "list<<EOF" >> "$GITHUB_OUTPUT"
+          cat /tmp/tags.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "primary=${img}:${TAG}" >> "$GITHUB_OUTPUT"
+          cat /tmp/tags.txt
+      - name: Build and push linux/amd64
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: platform/spa-nginx
+          file: platform/spa-nginx/Dockerfile
+          build-contexts: spa=apps/console
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          tags: ${{ steps.tags.outputs.list }}
+          labels: |
+            org.opencontainers.image.title=home-cloud-console
+            org.opencontainers.image.description=Member console SPA (nginx)
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.resolve-tag.outputs.tag }}
+          cache-from: type=gha,scope=home-cloud-console
+          cache-to: type=gha,mode=max,scope=home-cloud-console
+      - name: Verify digest in registry
+        id: verify
+        env:
+          PRIMARY: ${{ steps.tags.outputs.primary }}
+          PUSHED: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$PUSHED" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "::error::publish produced no digest (got '${PUSHED}')"
+            exit 1
+          fi
+          docker buildx imagetools inspect "$PRIMARY"
+          echo "digest=$PUSHED" >> "$GITHUB_OUTPUT"
+          echo "GHCR digest $PUSHED for $PRIMARY"
+      - name: Package public for Portainer github-registry
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+        run: |
+          gh api --method PATCH "/user/packages/container/home-cloud-console" \
+            -f visibility=public \
+            || gh api --method PATCH "/orgs/brenonaraujo/packages/container/home-cloud-console" \
+            -f visibility=public \
+            || true
+
+  webhook:
+    needs: [publish]
+    if: needs.publish.result == 'success' && needs.publish.outputs.digest != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST Portainer webhook (stack brenon-console, after digest)
+        env:
+          PORTAINER_WEBHOOK_CONSOLE: ${{ secrets.PORTAINER_WEBHOOK_CONSOLE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PORTAINER_WEBHOOK_CONSOLE:-}" ]; then
+            echo "::error::secret PORTAINER_WEBHOOK_CONSOLE is empty (URL never belongs in git)"
+            exit 1
+          fi
+          curl -fsS -X POST "$PORTAINER_WEBHOOK_CONSOLE"
+          echo "webhook posted after digest ${{ needs.publish.outputs.digest }}"
