@@ -3,14 +3,15 @@
     v-if="showDock"
     class="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3"
   >
-    <transition name="hermes-panel">
-      <div
-        v-if="dock.open"
-        class="hermes-panel pointer-events-auto flex h-[min(42rem,calc(100vh-5.5rem))] w-[min(36rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-white/10 bg-gray-950"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="t('console.site.dockTitle')"
-      >
+    <div
+      class="hermes-panel absolute bottom-[calc(3.5rem+0.75rem)] right-0 flex h-[min(42rem,calc(100vh-5.5rem))] w-[min(36rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-white/10 bg-gray-950"
+      :class="dock.open ? 'is-open pointer-events-auto' : 'is-hidden'"
+      role="dialog"
+      :aria-modal="dock.open ? 'true' : 'false'"
+      :aria-hidden="dock.open ? 'false' : 'true'"
+      :inert="!dock.open"
+      :aria-label="t('console.site.dockTitle')"
+    >
         <div class="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-white">{{ t('console.site.dockTitle') }}</p>
@@ -38,8 +39,7 @@
         <p v-else class="px-4 py-4 text-sm leading-relaxed text-amber-300" role="alert">
           {{ panelError || t('console.site.dockNotReady') }}
         </p>
-      </div>
-    </transition>
+    </div>
 
     <button
       type="button"
@@ -178,6 +178,17 @@ onMounted(load)
 .hermes-panel {
   box-shadow: 0 24px 64px rgb(0 0 0 / 0.45);
   transform-origin: bottom right;
+  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1), transform 280ms cubic-bezier(0.22, 1, 0.36, 1), visibility 280ms;
+}
+.hermes-panel.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.94);
+}
+.hermes-panel.is-open {
+  visibility: visible;
+  opacity: 1;
 }
 .hermes-x {
   display: flex;
@@ -193,17 +204,7 @@ onMounted(load)
   background: #1f2937;
   color: #f9fafb;
 }
-.hermes-panel-enter-active {
-  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1), transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.hermes-panel-leave-active {
-  transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1), transform 180ms cubic-bezier(0.4, 0, 1, 1);
-}
-.hermes-panel-enter-from,
-.hermes-panel-leave-to {
-  opacity: 0;
-  transform: translateY(12px) scale(0.94);
-}
+
 @keyframes hermes-pulse {
   0%, 100% { opacity: 0.35; transform: scale(1); }
   50% { opacity: 0.8; transform: scale(1.08); }
@@ -211,8 +212,7 @@ onMounted(load)
 @media (prefers-reduced-motion: reduce) {
   .hermes-fab,
   .hermes-fab__glow,
-  .hermes-panel-enter-active,
-  .hermes-panel-leave-active {
+  .hermes-panel {
     animation: none;
     transition: none;
   }
