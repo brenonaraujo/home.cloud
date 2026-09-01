@@ -21,7 +21,27 @@ Additive only. Existing `home-server` hostnames/CNAME were not replaced.
 
 F1.2 (#4) versioned this compose but did not apply it. F1.3 applied the stack so the public hostname had an origin, then merged **only** the `console` ingress rule (GET → merge → PUT; refuse if the previous hostname set shrank) and created the CNAME.
 
-Live placement is currently `node.role == manager` because the operator token cannot push GHCR (`packages` scope missing); the amd64 image was loaded on the manager. Git `stack.yml` still documents `vserver` as the contract once the image is in GHCR.
+## F1.ci — GHCR + Portainer webhook (issue #26)
+
+Happy path (GitHub Actions `release.yml`, after tag `vX.Y.Z`):
+
+1. Sensors (unit, spa-nginx smoke, Trivy CRITICAL).
+2. Push `ghcr.io/brenonaraujo/home-cloud-console` (`linux/amd64`; `vX.Y.Z`, `sha-<commit>`, `latest` if stable).
+3. Verify digest on GHCR.
+4. `curl -fsS -X POST "$PORTAINER_WEBHOOK_CONSOLE"`.
+
+Live stack must pull that image (`CONSOLE_IMAGE_TAG` = `vX.Y.Z` or `sha-<git>`), not a load-only local tag. Git `stack.yml` keeps placement `vserver`.
+
+**Operator (once, not in git):**
+
+- Portainer → stack `brenon-console` (endpoint 3) → enable webhook; copy URL.
+- GitHub → Settings → Secrets and variables → Actions → `PORTAINER_WEBHOOK_CONSOLE` = that URL.
+- Registry Portainer `github-registry` can pull the package (public, or creds that can pull).
+- Do not commit the webhook URL.
+
+**Not the happy path:** `docker save` / `docker load`, ForceUpdate, PUT this `stack.yml` with masked secrets (`***`), PUT tunnel, `stack rm`.
+
+Rollback: pin `CONSOLE_IMAGE_TAG` to the previous digest/tag and fire the same webhook. Do not `stack rm`.
 
 ### Smoke (public — this is the DoD)
 

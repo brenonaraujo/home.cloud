@@ -15,6 +15,38 @@
 
 ---
 
+## Overlay — home.cloud (console, #26)
+
+Este git **não** publica backend/frontend multi-arch nem deploy ECS.
+Recorte do console (único GHCR):
+
+1. **Sensores** (`ci.yml` em PR/main; de novo em `release.yml` antes do push): contracts, `npm test`/`build` em `apps/console`, build+smoke `platform/spa-nginx`, Trivy **CRITICAL** bloqueia.
+2. **Tag** `vMAJOR.MINOR.PATCH` (já cortada por `.github/scripts/semver-release.sh` no merge `feat`/`fix`) é a identidade. `GITHUB_TOKEN` **não** re-dispara workflow em tag — o publish roda **no mesmo** `release.yml`.
+3. **Publish** `ghcr.io/brenonaraujo/home-cloud-console` `linux/amd64`: `vX.Y.Z`, `sha-<commit>`, `latest` só em tag estável. Pacote público/pullável pelo registry Portainer `github-registry`.
+4. **Digest** no registry (output do build-push + `imagetools inspect`). Sem digest → sem webhook.
+5. **Run:** `curl -fsS -X POST "$PORTAINER_WEBHOOK_CONSOLE"` (secret GitHub, URL **nunca** no git). Stack viva `brenon-console` (endpoint 3). Compose live aponta `ghcr.io/brenonaraujo/home-cloud-console:${CONSOLE_IMAGE_TAG}` — não artefato só-local.
+
+```mermaid
+sequenceDiagram
+    participant CI as GitHub Actions
+    participant GHCR as "ghcr.io"
+    participant PT as Portainer
+    participant SW as "stack brenon-console"
+
+    CI->>CI: sensores (unit, smoke, Trivy CRITICAL)
+    CI->>CI: tag vX.Y.Z + GitHub Release
+    CI->>GHCR: push linux/amd64
+    CI->>GHCR: verificar digest
+    CI->>PT: POST webhook secret
+    PT->>SW: pull GHCR + roll start-first
+```
+
+**Não é o caminho feliz:** `docker save` / `docker load`, ForceUpdate manual, PUT do `stack.yml` git com senha mascarada (`***`), PUT túnel, `stack rm` tenant, secret no git, `latest` como contrato de produção (use `vX.Y.Z` ou `sha-<commit>` em `CONSOLE_IMAGE_TAG`).
+
+**Operador (live, fora do git):** habilitar webhook na stack `brenon-console` (endpoint 3); gravar a URL em `Settings → Secrets → Actions` como `PORTAINER_WEBHOOK_CONSOLE`; garantir pull do pacote no registry Portainer `github-registry`. Rollback = apontar a stack à tag/digest anterior (mesmo webhook ou pin). Não `stack rm`.
+
+---
+
 ## 0. Fluxo ponta-a-ponta (Mermaid)
 
 ```mermaid

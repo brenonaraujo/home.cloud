@@ -6,6 +6,9 @@ on:
 
 permissions:
   contents: read
+  security-events: write
+
+# Sensors before any GHCR publish (release.yml). Failure is visible on the run.
 
 jobs:
   contracts:
@@ -41,9 +44,11 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # Independent of `contracts`. Failure here must not require editing that job.
+  # Image job after unit/build. Independent of `contracts`.
   spa-nginx:
     runs-on: ubuntu-latest
+    needs: [console]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Build console image from platform/spa-nginx
@@ -54,3 +59,26 @@ jobs:
             platform/spa-nginx
       - name: Smoke health, shell HTML, SPA fallback
         run: bash platform/spa-nginx/smoke.sh --skip-build --image home-cloud-console:ci --port 18082
+      - name: Trivy image scan (block CRITICAL)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: home-cloud-console:ci
+          format: table
+          severity: CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+      - name: Trivy SARIF
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: home-cloud-console:ci
+          format: sarif
+          output: trivy-console.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+      - name: Upload Trivy SARIF
+        if: always() && hashFiles('trivy-console.sarif') != ''
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-console.sarif
