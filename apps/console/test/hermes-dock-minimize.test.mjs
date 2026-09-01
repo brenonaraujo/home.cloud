@@ -84,10 +84,9 @@ describe('HermesDock hide keeps ttyd WebSocket', () => {
   it('keeps the iframe mounted and does not fall back to console chat', () => {
     assert.doesNotMatch(dock, /v-if="dock\.open"/)
     assert.match(dock, /<iframe/)
+    assert.match(dock, /HermesDockSessions/)
     assert.equal(dock.includes('sendHermesChat'), false)
     assert.equal(api.includes('/api/v1/hermes/chat'), false)
-    assert.equal(dock.includes('dockNew'), false)
-    assert.equal(dock.includes('HermesDockSessions'), false)
   })
 
   it('catalog errors keep the live instance instead of unmounting', () => {

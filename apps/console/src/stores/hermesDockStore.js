@@ -27,5 +27,9 @@ export const useHermesDockStore = defineStore('hermesDock', () => {
     lastEvent.value = 'restart'
   }
 
-  return { open, nonce, lastEvent, startChat, close, toggle, restart }
+  function newSession() {
+    restart()
+  }
+
+  return { open, nonce, lastEvent, startChat, close, toggle, restart, newSession }
 })
