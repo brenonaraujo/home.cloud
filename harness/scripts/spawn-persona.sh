@@ -6,7 +6,7 @@ brief="${2:?brief file}"
 repo="${3:-/Users/araujo/Projects/home.cloud}"
 id="$(basename "$brief" .md)"
 log="/tmp/${id}.log"
-if pgrep -fl "hermes -p ${profile} " 2>/dev/null | grep -v pgrep >/dev/null; then
+if pgrep -fl "hermes -p ${profile} " 2>/dev/null | grep -v pgrep | grep -F -- "--in $repo" >/dev/null; then
   echo "busy: $profile"
   exit 0
 fi
