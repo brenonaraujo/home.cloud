@@ -112,6 +112,13 @@
             rel="noopener"
             class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
           >{{ t('console.hermes.openPage') }}</a>
+          <a
+            v-if="dashboardHref"
+            :href="dashboardHref"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
+          >{{ t('console.hermes.openDashboard') }}</a>
           <button
             type="button"
             class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
@@ -225,6 +232,7 @@ import {
   renameHermesInstance,
   stripAgentPrefix
 } from '../../api/hermesApi.js'
+import { hermesDashboardUrl } from '../../api/hermesSessions.js'
 import ConsoleBreadcrumb from '../../components/console/ConsoleBreadcrumb.vue'
 import ConsoleHostPage from '../../components/console/ConsoleHostPage.vue'
 
@@ -270,6 +278,7 @@ const previewSlug = computed(() => agentSlug(publicName.value || defaultName.val
 const previewHost = computed(() => (previewSlug.value ? `${previewSlug.value}.brenon.cloud` : ''))
 const waiting = computed(() => instances.value.some(isStarting))
 const tuiHref = computed(() => hermesTuiUrl(pageInstance.value))
+const dashboardHref = computed(() => hermesDashboardUrl(pageInstance.value))
 
 function canOpen(row) {
   return Boolean(row?.ready && row.hostname)

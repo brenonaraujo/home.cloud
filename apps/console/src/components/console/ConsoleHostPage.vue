@@ -38,6 +38,13 @@
         rel="noopener"
         class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
       >{{ t('console.hermes.tuiOpen') }}</a>
+      <a
+        v-if="dashboardHref"
+        :href="dashboardHref"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
+      >{{ t('console.hermes.openDashboard') }}</a>
     </div>
     <p v-else class="mt-6 text-sm text-gray-500">{{ t('console.hermes.starting') }}</p>
 
@@ -98,6 +105,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/authStore'
 import { useHermesDockStore } from '../../stores/hermesDockStore'
 import { fetchHermesSite, hermesTuiUrl, humanHermesError, resetHermesSite, saveHermesSite } from '../../api/hermesApi.js'
+import { hermesDashboardUrl } from '../../api/hermesSessions.js'
 
 const props = defineProps({
   instance: { type: Object, default: null }
@@ -119,6 +127,7 @@ const saved = ref(false)
 const error = ref('')
 
 const tuiHref = computed(() => hermesTuiUrl(props.instance))
+const dashboardHref = computed(() => hermesDashboardUrl(props.instance))
 
 const visHint = computed(() => {
   if (visibility.value === 'members') return t('console.site.hintMembers')

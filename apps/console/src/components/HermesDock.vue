@@ -29,6 +29,8 @@
           </button>
         </div>
 
+        <HermesDockSessions :instance="instance" />
+
         <iframe
           v-if="tuiSrc"
           :key="dock.nonce"
@@ -81,6 +83,7 @@ import {
   humanHermesError,
   pickReadyHermesInstance
 } from '../api/hermesApi.js'
+import HermesDockSessions from './HermesDockSessions.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()

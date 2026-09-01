@@ -79,7 +79,7 @@ describe('Hermes dock stays on brenon.cloud', () => {
     assert.equal(dock.includes('sendHermesChat'), false)
     assert.equal(api.includes('sendHermesChat'), false)
     assert.equal(api.includes('/api/v1/hermes/chat'), false)
-    assert.equal(dock.includes('dockNew'), false)
+    assert.match(dock, /HermesDockSessions/)
     assert.equal(dock.includes('hermes-mascot'), false)
     assert.match(dock, /hermes-fab/)
     assert.equal(page.includes('<iframe'), false)

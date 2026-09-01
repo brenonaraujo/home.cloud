@@ -23,5 +23,9 @@ export const useHermesDockStore = defineStore('hermesDock', () => {
     open.value = true
   }
 
-  return { open, nonce, startChat, close, toggle, restart }
+  function newSession() {
+    restart()
+  }
+
+  return { open, nonce, startChat, close, toggle, restart, newSession }
 })
