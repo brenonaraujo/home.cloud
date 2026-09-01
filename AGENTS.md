@@ -17,4 +17,4 @@ Ler nesta ordem: [README.md](./README.md) → [SPEC.md](./SPEC.md) → [FOUNDATI
 
 ## Status
 
-Fase 0. Placeholders em `apps/*/README.md` são intenção, não código.
+F1 lab live em `https://console.brenon.cloud/`. Fase 4 (#8 301 no site) = **GO**. Fases 5–8 depois do épico #2.

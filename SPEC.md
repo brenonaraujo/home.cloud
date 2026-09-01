@@ -83,7 +83,7 @@ Lê este repositório para montar uma casa parecida. Não usa a nuvem Brenon. Us
 
 **Não faz:** ser o blog; ser o admin do provedor de identidade para o membro comum; fingir fatura ou instância.
 
-**Shell único, dois hosts:** o membro entra em `console.brenon.cloud`. A API e a UI staff ficam em `control.brenon.cloud`. Mesmo idioma visual. Sem fundir git. Sem 301 neste GO.
+**Shell único, dois hosts:** o membro entra em `console.brenon.cloud`. A API e a UI staff ficam em `control.brenon.cloud`. Mesmo idioma visual. Sem fundir git. 301 `/console` no site é Fase 4 (#8) — GO 2026-09-01.
 
 ### 4.3 Plataforma (invisível para o visitante, visível para o operador)
 
@@ -139,7 +139,7 @@ Como membro no plano livre, não quero ver admin de identidade nem orquestraçã
 ### Operador vê plataforma
 
 Como operador, quero os consoles de plataforma no mesmo shell, para não ter um favorito por ferramenta.  
-**Aceite:** tiles de plataforma aparecem só para grupos de staff definidos no catálogo. Tile Control só staff, destino `https://control.brenon.cloud`. Plano pago não revela operação. **Shell único, dois hosts** — mesmo idioma visual no telefone (375 / 768 / 1280). Sem 301. Sem fundir git.
+**Aceite:** tiles de plataforma aparecem só para grupos de staff definidos no catálogo. Tile Control só staff, destino `https://control.brenon.cloud`. Plano pago não revela operação. **Shell único, dois hosts** — mesmo idioma visual no telefone (375 / 768 / 1280). 301 do blog é #8. Sem fundir git.
 
 ### Tenant sobrevive ao console
 
@@ -168,8 +168,8 @@ Como visitante no hostname do console quando o lab está morto, quero uma págin
 
 Medíveis sem apontar stack:
 
-- [ ] Existe um documento que uma pessoa de fora lê e distingue empresa / plataforma / produto / console.
-- [ ] O membro tem um hostname de console distinto do blog.
-- [ ] O visitante continua no blog sem conta.
-- [ ] Um tenant já criado responde com o console indisponível.
-- [ ] O catálogo do membro não contém serviço que a plataforma não publicou.
+- [x] Existe um documento que uma pessoa de fora lê e distingue empresa / plataforma / produto / console.
+- [x] O membro tem um hostname de console distinto do blog.
+- [x] O visitante continua no blog sem conta.
+- [x] Um tenant já criado responde com o console indisponível.
+- [x] O catálogo do membro não contém serviço que a plataforma não publicou.

@@ -131,7 +131,7 @@ Marco: https://github.com/brenonaraujo/home.cloud/milestone/1
 | [#7](https://github.com/brenonaraujo/home.cloud/issues/7) | F1.5 CORS / Stripe / GATE_URL |
 | [#8](https://github.com/brenonaraujo/home.cloud/issues/8) | F1.6 301 no site |
 
-Cadeia: #3 bloqueia #4 bloqueia #5 bloqueia #6 bloqueia #7 bloqueia #8. Sem GO em `apps/` até ARCHITECTURE.md §9.
+Cadeia F1: #3–#7 `done`. **#8 GO** (site `brenon.cloud`, 2026-09-01). Sem `--wave 9`. Sem PUT compose `***`.
 
 ## Release + CD (console)
 

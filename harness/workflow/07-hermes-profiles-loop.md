@@ -90,12 +90,11 @@ GitHub webhook → `localhost` não chega. O poll de 2 min é o gancho.
 
 Não migrar o que já funciona:
 
-- Site `brenon.cloud` / Netlify / 301 `#8` — **não**.
-- PUT túnel, CNAME de zona, ForceUpdate control, Stripe return, `GATE_URL` — **não**.
-- PUT/delete stack Swarm **existente** — **não**.
-- Recortes permitidos: só este git (`apps/console`, `platform/`, `deploy/` docs) e smoke **local**.
+- PUT túnel, CNAME de zona, ForceUpdate control com compose `***` — **não**.
+- PUT/delete stack Swarm **existente** (tenant) — **não**.
+- Recortes permitidos: este git **e** `~/Projects/brenon.cloud` para **#8** (301 `/console`, AuthMenu absoluto, bundle sem shell).
+- Site permanece Netlify. Não mover o blog para Swarm.
 
 ## Fim
 
-Épico #2 `done` quando #3–#7 que forem **aditivos** estiverem `done`.
-#5–#8 ficam abertas se exigirem borda live — o loop **não** as força.
+Épico #2 `done` quando #3–#8 estiverem `done` (F1.6 301 no site incluso).

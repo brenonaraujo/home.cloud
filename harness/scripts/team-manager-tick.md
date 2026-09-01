@@ -16,10 +16,9 @@ comentário team-manager nessa issue já diz a mesma coisa.
 1. `gh issue list --state open` e `gh pr list --state open`.
 2. Épico #2: não implementa; não comenta em loop.
 3. blocked-by OPEN → não comece a filha.
-4. #8 (301 `/console` no Netlify de **brenon.cloud**) = cutover humano.
-   **NUNCA** spawn, **NUNCA** `ready`, **NUNCA** abrir ~/Projects/brenon.cloud.
-   `console.brenon.cloud` 200 **não** é GO. Cron orquestrador **não** é GO. GO só no chat default do operador.
-   Se a label não for `blocked`: uma vez, `blocked` + tira `triage`/`ready`. Depois: silêncio.
+4. #8 (301 `/console` no Netlify de **brenon.cloud**) = **GO** (operador 2026-09-01).
+   Spawn no repo `~/Projects/brenon.cloud` (`--in` esse path). Não apagar túnel/hostname.
+   Tira `blocked` se ainda estiver. type/feature → domain-expert se ainda triage.
 5. Labels — **mova-as**. Comentário sem label não conta.
    - DoD do architect e ainda triage/refined → `ready`. Não re-spawn architect.
    - "peguei" da mesma persona < 30 min → não re-spawn.
@@ -34,6 +33,6 @@ comentário team-manager nessa issue já diz a mesma coisa.
    - `qa` aberta > 15 min sem worker = ação, não idle.
 6. Até 3 workers. `nohup hermes -p <perfil> chat --oneshot --in /Users/araujo/Projects/home.cloud --query-file /tmp/hc-<id>.md >>/tmp/hc-<id>.log 2>&1 &`
    Brief: PRIMEIRO comente **peguei**. Não feche, não mergeie.
-7. Cerca: não apagar túnel/hostname existente, não 301 Netlify, não PUT compose mascarado.
-   Adicionar console.brenon.cloud / OIDC console / CORS Origin = ok.
+7. Cerca: não apagar túnel/hostname existente, não PUT compose mascarado.
+   #8 301 Netlify + AuthMenu absoluto + tirar shell do bundle do **site** = ok (repo brenon.cloud).
 8. Comentário `## 🎯 team-manager` **só quando a ação for nova**.
