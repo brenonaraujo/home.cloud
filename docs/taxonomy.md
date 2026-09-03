@@ -39,7 +39,7 @@ O que outros workloads assumem. Dono: operação da casa. Guardrail: grupos de s
 | API máquina | `api.brenon.cloud` Kong | API Gateway | Paths key-auth. Não é o console. |
 | Edge HaaS | Traefik haas-edge | data plane de roteamento de tenant | Tenant some se *este* cair. |
 | Observabilidade | Grafana, Uptime Kuma | CloudWatch | Cego. Não derruba produto. |
-| Object storage | MinIO | S3 | Objetos: data. Console MinIO: control. |
+| Object storage | MinIO | S3 | Objetos da **plataforma** (operador): data. Console MinIO: control. Não é o espaço de mídia do membro. |
 | Automação | n8n | Step Functions frouxo | Jobs param. |
 
 **Regra:** aviso “a plataforma caiu” só cita linhas desta tabela.
@@ -50,7 +50,9 @@ Isolado. Repo próprio. Pode morrer sozinho.
 
 Exemplos vivos no lab Brenon: OficinaCloud, TibiaPixel, BRNN AI, VServer, Draw, Console Air, Profitt, Clinicsy, Atalaia, Mentoria, tenants `agent-{nome}.brenon.cloud`.
 
-Criar/apagar tenant = control plane. Usar tenant já criado = data plane.
+**Espaço de mídia / documentos da conta** — **produto**. Pastas, objetos e páginas do membro. Repo próprio; **não** mora neste git. Não é o object storage da plataforma (MinIO, tabela acima). O console só oferece se o catálogo publicou para aquela conta; ausência não é erro de carga; o shell não inventa tile. Staff não lê o acervo só por ser operador. Plano pago não revela operação.
+
+Criar/apagar tenant = control plane. Usar tenant já criado = data plane. No espaço de mídia: criar pasta, conceder, publicar, destruir = control; ler objeto já guardado e página já publicada = data.
 
 ## Console
 
@@ -69,6 +71,14 @@ O membro *vê* produtos através dele. Se o console 502 e o Draw abre, a taxonom
 > Oficina fora do ar. Console e Draw ok.  
 > Texto errado: “Brenon Cloud está down.”  
 > Texto certo: “OficinaCloud está indisponível.”
+
+> Espaço de mídia do membro 502. Console e MinIO da plataforma ok.  
+> Texto errado: “a plataforma caiu.”  
+> Texto certo: “o produto de mídia está indisponível.”
+
+> Console 502. Hostname do tenant de mídia já existente ainda entrega o já guardado / já publicado.  
+> Texto errado: “o produto de mídia caiu.”  
+> Texto certo: “o console está indisponível.”
 
 > Túnel morto. Blog Netlify ok. Console 502. Agent 502.  
 > Texto certo: “Borda da plataforma indisponível.” Não: “só o console.”

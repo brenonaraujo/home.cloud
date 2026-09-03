@@ -53,7 +53,7 @@ Lê este repositório para montar uma casa parecida. Não usa a nuvem Brenon. Us
 | **Console** | Porta de operação do membro. Lista o que a conta pode abrir, billing, instâncias próprias. |
 | **Control plane** | Criar, alterar, apagar, listar recursos. Painel, provisionamento, checkout. |
 | **Data plane** | O recurso **já existente** cumprindo sua função (o chat da instância, o quadro, o DNS respondendo). |
-| **Tenant** | Recurso isolado de um membro (ex.: instância de agente com hostname próprio). |
+| **Tenant** | Recurso isolado de um membro (ex.: instância de agente ou espaço de mídia, cada um com hostname próprio). |
 | **Estabilidade estática** | Se o control plane falha, o que já estava no ar continua. Não se recria nada para “salvar” o que já existe. |
 | **Marca de produto** | Nome curto da nuvem (no caso Brenon: BRNN), distinto do blog pessoal. |
 
@@ -93,12 +93,25 @@ Lê este repositório para montar uma casa parecida. Não usa a nuvem Brenon. Us
 - Orquestração dos workloads.
 - Observabilidade e página de saúde.
 - Provisionar e destruir tenant de produto (HaaS) a pedido do console.
+- Armazenamento de objeto da operação (plataforma). Distinto do espaço de mídia da conta (produto).
 
 ### 4.4 Produto
 
 - Tem hostname próprio.
 - Autorização própria (pode ser “qualquer conta”, “só staff”, “só dono do tenant”).
 - Continua cumprindo a função **depois de provisionado**, mesmo se o console estiver fora.
+
+### 4.5 Espaço de mídia / documentos (produto)
+
+- É **produto** da conta. Não é plataforma. Não é o object storage do operador. Não é o blog. Não mora neste git.
+- O console só oferece se o catálogo publicou para aquela conta. Ausência não é erro de carga. O shell não inventa tile. O object storage da plataforma não aparece como este produto. Plano pago não revela operação.
+- Um espaço por conta, quando a conta tiver direito. Hostname da casa, um registro por slug. Nomes da plataforma reservados. Sem curinga de zona.
+- Objeto e pasta nascem **privados ao dono**. Outro membro, sem concessão, não obtém. Visitante sem identidade não obtém o privado. Operador não obtém o acervo só por ser staff.
+- Conceder a outro membro da casa exige a identidade dele e é revogável. Concessão não publica e não transfere titularidade. Publicar expõe só o marcado, no hostname daquele tenant — não no site da empresa, não no console. Publicar não concede escrita. Objetos não publicados no mesmo tenant continuam fechados nesse hostname.
+- Páginas publicadas a partir de objetos já guardados respondem no hostname público **sem conta**. Superfície de produto, não o blog.
+- Criar pasta, conceder, publicar, destruir = control (pode falhar; quota estourada recusa no control, visível, sem objeto pela metade). Ler objeto já guardado e página já publicada = data. Console parado não derruba o tenant já existente. Recuperação não recria o tenant.
+- Destruir o tenant zera objetos, concessões, hostname daquele slug e páginas. Recriar o mesmo nome não ressuscita.
+- 502 deste produto é produto indisponível, não “a plataforma caiu”. 502 do console não é este produto fora. Queda da borda se nomeia borda.
 
 ---
 
@@ -116,6 +129,7 @@ Lê este repositório para montar uma casa parecida. Não usa a nuvem Brenon. Us
 10. **Página de downtime (futuro) só fala em “plataforma”** para serviços da taxonomia de plataforma. Produto fora do ar é produto fora do ar.
 11. **Logout do console** devolve a pessoa ao site público deslogada.
 12. **Marca de produto** (`brnn`) não substitui o site da empresa. É linha de produto.
+13. **Compartilhar ≠ publicar.** Objeto nasce privado. Concessão a outro membro exige identidade e é revogável; não torna público. Publicar é ato explícito do dono, só o marcado, no hostname daquele tenant.
 
 ---
 
@@ -145,6 +159,11 @@ Como operador, quero os consoles de plataforma no mesmo shell, para não ter um 
 
 Como membro com instância já criada, quero conversar com ela mesmo se o painel do console estiver fora.  
 **Aceite:** o hostname do tenant responde a saúde e ao chat com o console **parado**. Criar uma instância *nova* pode falhar — isso é control plane.
+
+### Membro guarda mídia da conta
+
+Como membro, quero um espaço de mídia e documentos da minha conta — privado, partilhado com outro membro da casa, ou publicado no hostname da casa — para guardar o que é meu sem misturar com o site da empresa nem com a operação da plataforma.  
+**Aceite:** o console só oferece se o catálogo publicou para aquela conta. Ausência não é erro de carga. O object storage da plataforma não aparece como este produto. Objeto/pasta nascem privados; outro membro sem concessão não obtém; visitante não obtém o privado; staff não obtém o acervo só por ser operador. Conceder ≠ publicar; revogar encerra; publicar expõe só o marcado no hostname daquele tenant; o privado do mesmo tenant continua fechado; páginas publicadas respondem sem conta. Tenant já existente: objeto já guardado e página já publicada continuam com o console parado; criar, conceder, publicar, destruir pode falhar. Destruir zera objetos, concessões, hostname daquele slug e páginas; recriar o mesmo nome não devolve o acervo. 502 deste produto = produto indisponível, não “a plataforma caiu”; 502 do console ≠ este produto fora; queda da borda se nomeia borda.
 
 ### Downtime honesto (futuro)
 

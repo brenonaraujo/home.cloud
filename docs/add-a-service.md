@@ -11,6 +11,8 @@ Antes de qualquer container: é **plataforma** ou **produto**? Ver [taxonomy.md]
 - Plataforma → grupos staff, docs de fundação, blast radius alto.
 - Produto → repo próprio, tile no catálogo só se o console deve mostrar.
 
+Exemplo: object storage da casa (MinIO) = **plataforma**. Espaço de mídia/documentos da conta = **produto** (repo próprio, **não** este git). Não reusar o MinIO como oferta do membro. Tile **só** depois do catálogo publicar; o shell não inventa serviço. Ausência da oferta não é erro de carga.
+
 ## 2. Imagem
 
 - Dockerfile reproduzível. Tag imutável no registry (`vX.Y.Z`, não só `latest` em produção).
@@ -43,7 +45,7 @@ Se o membro deve ver tile:
 
 - PUT no control plane com `id`, `name`, `launchUrl`, grupos, ícone, cor, `enabled`.
 - Smoke `GET` catálogo com `Origin` do console.
-- **Proibido** hardcode no SPA.
+- **Proibido** hardcode no SPA. Oferta ausente (catálogo não publicou) **não** é erro de carga — inclusive o espaço de mídia da conta.
 
 ## 7. Smoke (nessa ordem)
 
@@ -57,3 +59,5 @@ Não declarar sucesso com LAN-only.
 ## 8. Falha esperada
 
 O console / control podem estar down. O serviço **já publicado** deve continuar (data plane). Se não continuar, a dependência de runtime no control plane é o bug.
+
+Tenant de mídia já existente: objeto já guardado e página já publicada continuam. Criar pasta, conceder, publicar ou destruir **pode** falhar — esperado. Recuperação **não** recria o tenant para “salvar” o acervo.

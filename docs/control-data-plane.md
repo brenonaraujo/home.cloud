@@ -23,6 +23,7 @@ flowchart LR
     C[Checkout Stripe]
     D["POST instância HaaS"]
     E[Criar CNAME novo]
+    K["Pasta / concessão / publicar / destruir mídia"]
   end
 
   subgraph dp["Data plane"]
@@ -31,6 +32,7 @@ flowchart LR
     H[Resolver CNAME existente]
     I[Container Swarm running]
     J[Kong path já publicado]
+    L["Objeto já guardado / página já publicada"]
   end
 ```
 
@@ -42,14 +44,17 @@ Experimento que a fundação **exige** depois que o console existir:
 2. Parar a replica do console (e só ela).
 3. `agent-alice` ainda responde saúde e chat.
 4. Criar um tenant novo **pode** falhar — esperado.
+5. O mesmo para um tenant de mídia já existente: objeto já guardado e página já publicada respondem. Criar pasta, alterar concessão, publicar ou destruir **pode** falhar.
 
-Se o passo 3 falhar, o tenant dependia do console em runtime. Isso é bug de desenho, não “o lab é frágil”.
+Se o passo 3 (ou 5) falhar, o tenant dependia do console em runtime. Isso é bug de desenho, não “o lab é frágil”.
 
 ## O que não fazer na recuperação
 
 - Abrir Portainer para *lançar* capacidade nova como primeiro passo do incidente.
 - Chamar a API de provision no meio da queda para “recuperar” o que já existia.
+- Recriar o tenant de mídia para “salvar” o acervo que já existia.
 - Tratar 502 do console como 502 do produto.
+- Tratar 502 do produto de mídia como “a plataforma caiu”.
 
 Fazer: saúde do data plane (túnel, Traefik, task running). Página de downtime futura lê isso, não o console.
 
