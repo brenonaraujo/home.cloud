@@ -26,7 +26,7 @@ flowchart TB
 
   subgraph data["Data plane — o que já existe deve seguir"]
     Tenants["agent-nome.brenon.cloud"]
-    Products["produtos: oficina, draw, tibiapixel, ..."]
+    Products["produtos: oficina, draw, tibiapixel, mídia da conta, ..."]
     EdgeHaas["haas-edge Traefik"]
   end
 
@@ -63,7 +63,7 @@ Leitura: o membro *entra* pelo console (control). O membro *usa* o tenant/produt
 | `control.brenon.cloud` | Catálogo, billing glue, HaaS API | Swarm (já) | Swarm |
 | `api.brenon.cloud` | Kong, máquina a máquina | Swarm (já) | Swarm |
 | `uptime` / status | Saúde | já | alimenta `apps/status` |
-| `agent-*`, `draw.`, `oficina.`, … | Data plane / produto | como hoje | como hoje |
+| `agent-*`, `draw.`, `oficina.`, tenant de mídia da conta, … | Data plane / produto | repo próprio; um CNAME por slug | como hoje |
 
 Corte de URL no site (Netlify, não o app console):
 
@@ -137,6 +137,7 @@ Dois incidentes diferentes, dois avisos diferentes:
 | Só a replica do console | 502 em `console.` ; `agent-alice` 200 | Console / control plane UI |
 | Túnel | Tudo `*.brenon.cloud` do lab | Borda da plataforma |
 | Só Oficina | oficina 502; console e Draw ok | Produto |
+| Só o produto de mídia | hostname do tenant 502; console e MinIO ok | Produto |
 
 Até existir `apps/status` no Cloudflare, 502 cru do túnel é o contrato. Não é bug escondido.
 
@@ -163,6 +164,7 @@ flowchart TB
     Of["oficina"]
     Tib["tibiapixel"]
     Ai["brnnai"]
+    Media["mídia da conta"]
     More["..."]
   end
 
@@ -228,7 +230,7 @@ Ainda no site (F1.6 / #8):
 ### D4 — Workloads fora deste git
 
 **Contexto:** multi-account. Oficina não é fundação.  
-**Decisão:** este repo recusa PRs de produto.  
+**Decisão:** este repo recusa PRs de produto. Espaço de mídia/documentos do membro é produto: contrato aqui, workload noutro git. Object storage MinIO permanece plataforma.  
 **Reverter quando:** um utilitário *da plataforma* (oauth2-proxy pattern) — aí vai em `platform/`, não em `apps/oficina`.
 
 ### D5 — Sem wildcard DNS de zona
@@ -247,6 +249,8 @@ Checklist de estudo (é para isso que este repo existe agora):
 - [ ] Concorda que tenant já criado é data plane?
 - [ ] Concorda que o blog não entra neste git nem neste Swarm?
 - [ ] Concorda que oficina não entra neste git?
+- [ ] Concorda que o espaço de mídia/documentos da conta é **produto** (repo próprio), e o object storage da casa permanece **plataforma**?
+- [ ] Concorda que o console não inventa tile deste produto até o catálogo publicar?
 - [ ] Concorda com dois clients OIDC?
 - [ ] Concorda com console no lab agora, Cloudflare depois — não o contrário?
 - [ ] A taxonomia de [docs/taxonomy.md](./docs/taxonomy.md) lista o que você chamaria de plataforma?
