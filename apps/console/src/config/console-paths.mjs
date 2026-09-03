@@ -1,4 +1,5 @@
 export const SITE_HOME = 'https://brenon.cloud/'
+export const HOUSE_STATUS = 'https://uptime.brenon.cloud/status/services'
 
 export const PATHS = {
   overview: '/',

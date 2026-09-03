@@ -33,6 +33,7 @@ export const useConsoleStore = defineStore('console', () => {
   const sidebarFavoritesHidden = ref(false)
   const lastVisit = ref({})
   const prefsEmail = ref('')
+  const searchQuery = ref('')
 
   const offline = computed(() => loaded.value && source.value === 'fallback' && Boolean(error.value))
 
@@ -142,6 +143,7 @@ export const useConsoleStore = defineStore('console', () => {
     readNotificationIds,
     sidebarFavoritesHidden,
     lastVisit,
+    searchQuery,
     load,
     appsFor,
     groupedFor,

@@ -43,7 +43,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/authStore'
 import { useConsoleStore } from '../../stores/consoleStore'
@@ -54,7 +55,7 @@ import { InboxIcon } from '../../components/icons/Icons.js'
 const { t, locale } = useI18n()
 const auth = useAuthStore()
 const catalog = useConsoleStore()
-const query = ref('')
+const { searchQuery: query } = storeToRefs(catalog)
 
 const apps = computed(() => catalog.appsFor(auth.groups))
 const filtered = computed(() => catalog.searchFor(auth.groups, query.value, locale.value))

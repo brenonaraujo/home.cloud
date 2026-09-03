@@ -145,41 +145,8 @@
       <div class="shrink-0 border-t border-white/10 px-2 py-4">
         <ul class="flex flex-col gap-1">
           <li>
-            <router-link
-              to="/account"
-              class="console-nav-link"
-              :class="exactActive('/account')"
-              @click="$emit('close')"
-            >
-              <UserIcon class="h-4 w-4" />
-              {{ t('console.nav.account') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link
-              to="/billing"
-              class="console-nav-link"
-              :class="exactActive('/billing')"
-              @click="$emit('close')"
-            >
-              <ReceiptIcon class="h-4 w-4" />
-              {{ t('console.nav.billing') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link
-              to="/notifications"
-              class="console-nav-link"
-              :class="exactActive('/notifications')"
-              @click="$emit('close')"
-            >
-              <BellIcon class="h-4 w-4" />
-              {{ t('console.nav.notifications') }}
-            </router-link>
-          </li>
-          <li>
             <a
-              href="https://uptime.brenon.cloud/status/services"
+              :href="HOUSE_STATUS"
               target="_blank"
               rel="noopener noreferrer"
               class="console-nav-link"
@@ -208,7 +175,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import { SITE_HOME } from '../../config/console-paths.mjs'
+import { HOUSE_STATUS, SITE_HOME } from '../../config/console-paths.mjs'
 import { useAuthStore } from '../../stores/authStore'
 import { useConsoleStore } from '../../stores/consoleStore'
 import { useConsoleUi } from '../../composables/useConsoleUi'
@@ -219,16 +186,13 @@ import {
 import LanguageSelector from '../ui/LanguageSelector.vue'
 import {
   ArrowLeftIcon,
-  BellIcon,
   BoltIcon,
   ChartIcon,
   ChevronRightIcon,
   ExternalIcon,
   GridIcon,
   HomeIcon,
-  ReceiptIcon,
-  StarSolidIcon,
-  UserIcon
+  StarSolidIcon
 } from '../icons/Icons.js'
 
 defineProps({

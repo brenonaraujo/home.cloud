@@ -55,6 +55,7 @@
       <button
         type="button"
         class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-white/10 px-2 py-1 text-sm text-gray-200 transition-colors hover:border-white/20 hover:text-white"
+        :aria-label="t('console.nav.sessionMenu')"
         :aria-expanded="menuOpen"
         aria-haspopup="menu"
         @click.stop="menuOpen = !menuOpen"
@@ -75,7 +76,7 @@
         </div>
         <router-link
           to="/account"
-          class="block px-3 py-2 text-sm text-gray-200 hover:bg-white/5"
+          class="flex min-h-[44px] items-center px-3 text-sm text-gray-200 hover:bg-white/5"
           role="menuitem"
           @click="menuOpen = false"
         >
@@ -83,23 +84,15 @@
         </router-link>
         <router-link
           to="/billing"
-          class="block px-3 py-2 text-sm text-gray-200 hover:bg-white/5"
+          class="flex min-h-[44px] items-center px-3 text-sm text-gray-200 hover:bg-white/5"
           role="menuitem"
           @click="menuOpen = false"
         >
           {{ t('console.nav.billing') }}
         </router-link>
-        <a
-          :href="SITE_HOME"
-          class="block px-3 py-2 text-sm text-gray-200 hover:bg-white/5"
-          role="menuitem"
-          @click="menuOpen = false"
-        >
-          {{ t('console.nav.backToSite') }}
-        </a>
         <button
           type="button"
-          class="block w-full px-3 py-2 text-left text-sm text-gray-400 hover:bg-white/5 hover:text-white"
+          class="flex min-h-[44px] w-full items-center px-3 text-left text-sm text-gray-400 hover:bg-white/5 hover:text-white"
           role="menuitem"
           @click="auth.logout()"
         >

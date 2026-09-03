@@ -61,6 +61,16 @@ export function searchServices(services, query, locale = 'en') {
   })
 }
 
+export function catalogQueryResult(services, query, locale = 'en', error = null) {
+  const failed = Boolean(error)
+  const items = searchServices(services || [], query, locale)
+  return {
+    items,
+    emptyMatch: items.length === 0 && !failed,
+    catalogFailed: failed
+  }
+}
+
 export function displayPlan(groups, billing) {
   const paid = String(billing?.plan || '').toLowerCase()
   const status = String(billing?.status || '').toLowerCase()

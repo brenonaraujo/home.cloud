@@ -35,51 +35,30 @@
       role="listbox"
     >
       <p v-if="!hits.length" class="px-4 py-6 text-sm text-gray-500">
-        {{ t('console.search.empty') }}
+        {{ q ? t('console.search.empty') : t('console.empty') }}
       </p>
-      <template v-else>
-        <p v-if="nativeHits.length" class="px-4 pb-1 pt-1 text-[11px] uppercase tracking-[0.12em] text-gray-500">
-          {{ t('console.search.pages') }}
-        </p>
-        <button
-          v-for="(item, index) in nativeHits"
-          :key="'n-' + item.id"
-          type="button"
-          role="option"
-          :aria-selected="active === index"
-          class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm"
-          :class="active === index ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5'"
-          @mouseenter="active = index"
-          @click="go(item.to)"
-        >
-          <span class="truncate font-medium">{{ item.title }}</span>
-          <span class="truncate text-xs text-gray-500">{{ item.hint }}</span>
-        </button>
-        <p v-if="serviceHits.length" class="px-4 pb-1 pt-2 text-[11px] uppercase tracking-[0.12em] text-gray-500">
-          {{ t('console.nav.services') }}
-        </p>
-        <button
-          v-for="(app, index) in serviceHits"
-          :key="'s-' + app.id"
-          type="button"
-          role="option"
-          :aria-selected="active === nativeHits.length + index"
-          class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm"
-          :class="active === nativeHits.length + index ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5'"
-          @mouseenter="active = nativeHits.length + index"
-          @click="go('/services/' + app.id)"
-        >
-          <component :is="iconOf(app.icon)" class="h-4 w-4 shrink-0" :class="iconColor(app.color)" />
-          <span class="truncate font-medium">{{ label(app.title) }}</span>
-          <span class="truncate font-mono text-xs text-gray-500">{{ host(app.url) }}</span>
-        </button>
-      </template>
+      <button
+        v-for="(app, index) in hits"
+        :key="app.id"
+        type="button"
+        role="option"
+        :aria-selected="active === index"
+        class="flex w-full items-center gap-3 px-4 py-2 text-left text-sm"
+        :class="active === index ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5'"
+        @mouseenter="active = index"
+        @click="go('/services/' + app.id)"
+      >
+        <component :is="iconOf(app.icon)" class="h-4 w-4 shrink-0" :class="iconColor(app.color)" />
+        <span class="truncate font-medium">{{ label(app.title) }}</span>
+        <span class="truncate font-mono text-xs text-gray-500">{{ host(app.url) }}</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
@@ -91,9 +70,9 @@ const { t, locale } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const catalog = useConsoleStore()
+const { searchQuery: query } = storeToRefs(catalog)
 const { label, host, iconOf, iconColor } = useConsoleUi()
 
-const query = ref('')
 const open = ref(false)
 const active = ref(0)
 const root = ref(null)
@@ -103,36 +82,12 @@ const modifier = computed(() =>
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+'
 )
 
-const nativePages = computed(() => [
-  { id: 'home', to: '/', title: t('console.nav.home'), hint: t('console.search.homeHint') },
-  { id: 'services', to: '/services', title: t('console.nav.services'), hint: t('console.search.servicesHint') },
-  { id: 'hermes', to: '/hermes', title: t('console.nav.hermes'), hint: t('console.search.hermesHint') },
-  { id: 'billing', to: '/billing', title: t('console.nav.billing'), hint: t('console.search.billingHint') },
-  { id: 'notifications', to: '/notifications', title: t('console.nav.notifications'), hint: t('console.search.notificationsHint') },
-  { id: 'account', to: '/account', title: t('console.nav.account'), hint: t('console.search.accountHint') }
-])
+const q = computed(() => String(query.value || '').trim().toLowerCase())
 
-const q = computed(() => query.value.trim().toLowerCase())
-
-const nativeHits = computed(() => {
-  if (!q.value) return nativePages.value
-  return nativePages.value.filter(
-    (item) =>
-      item.title.toLowerCase().includes(q.value) ||
-      item.hint.toLowerCase().includes(q.value) ||
-      item.id.includes(q.value)
-  )
-})
-
-const serviceHits = computed(() => {
+const hits = computed(() => {
   if (!q.value) return catalog.recentApps(auth.groups).slice(0, 6)
   return catalog.searchFor(auth.groups, query.value, locale.value).slice(0, 8)
 })
-
-const hits = computed(() => [
-  ...nativeHits.value.map((item) => ({ to: item.to })),
-  ...serviceHits.value.map((app) => ({ to: '/services/' + app.id }))
-])
 
 const close = () => {
   open.value = false
@@ -146,8 +101,8 @@ const go = (to) => {
 }
 
 const goFirst = () => {
-  const item = hits.value[active.value] || hits.value[0]
-  if (item) go(item.to)
+  const app = hits.value[active.value] || hits.value[0]
+  if (app) go('/services/' + app.id)
 }
 
 const move = (delta) => {
