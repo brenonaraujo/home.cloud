@@ -45,7 +45,8 @@
       "site": "brenon.cloud",
       "backToSite": "Voltar ao site",
       "menu": "Abrir menu",
-      "closeMenu": "Fechar menu"
+      "closeMenu": "Fechar menu",
+      "sessionMenu": "Menu da conta"
     },
     "home": {
       "greeting": "Olá, {name}",

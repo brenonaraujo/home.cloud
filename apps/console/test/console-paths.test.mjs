@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { PATHS, SITE_HOME } from '../src/config/console-paths.mjs'
+import { HOUSE_STATUS, PATHS, SITE_HOME } from '../src/config/console-paths.mjs'
 
 describe('console paths — apex is overview, no /console prefix', () => {
   it('sends the member home to /', () => {
@@ -33,5 +33,9 @@ describe('console paths — apex is overview, no /console prefix', () => {
 
   it('points back to the company site with an absolute URL', () => {
     assert.equal(SITE_HOME, 'https://brenon.cloud/')
+  })
+
+  it('points house health at the existing platform status surface', () => {
+    assert.equal(HOUSE_STATUS, 'https://uptime.brenon.cloud/status/services')
   })
 })
