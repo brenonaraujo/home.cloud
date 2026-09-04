@@ -148,3 +148,79 @@ describe('AC-5 — back is not logout; health is not catalog', () => {
     assert.equal(SITE_HOME, 'https://brenon.cloud/')
   })
 })
+
+function headerClass(topbar) {
+  const match = topbar.match(/<header class="([^"]+)"/)
+  assert.ok(match, 'topbar header class')
+  return match[1]
+}
+
+describe('issue #39 — session identity is operable, not just declared', () => {
+  it('does not clip the session menu inside the topbar', () => {
+    const topbar = src('components/console/ConsoleTopbar.vue')
+    const cls = headerClass(topbar)
+    assert.equal(cls.includes('overflow-hidden'), false)
+    assert.match(cls, /\bz-(30|40|50)\b/)
+  })
+
+  it('keeps the session identity control from shrinking away at 375', () => {
+    const topbar = src('components/console/ConsoleTopbar.vue')
+    const start = topbar.indexOf('ref="menuRoot"')
+    assert.ok(start > 0)
+    const trigger = topbar.slice(Math.max(0, start - 80), topbar.indexOf('role="menu"'))
+    assert.match(trigger, /relative shrink-0/)
+    assert.match(trigger, /min-h-\[44px\]/)
+    assert.match(trigger, /min-w-\[44px\]/)
+    assert.doesNotMatch(trigger, /\bhidden\b/)
+  })
+
+  it('keeps the session label visible on every SPEC width', () => {
+    const topbar = src('components/console/ConsoleTopbar.vue')
+    const label = topbar.match(/<span class="([^"]+)"[^>]*>\{\{\s*sessionLabel/)
+    assert.ok(label, 'visible sessionLabel in the identity control')
+    assert.doesNotMatch(label[1], /\bhidden\b/)
+  })
+
+  it('recognizes a session without a display name via email', () => {
+    const ui = src('composables/useConsoleUi.js')
+    const match = ui.match(
+      /export function sessionIdentityLabel\(displayName, email\) \{\n([\s\S]*?)\n\}/
+    )
+    assert.ok(match, 'sessionIdentityLabel is exported')
+    const sessionIdentityLabel = new Function('displayName', 'email', match[1])
+    assert.equal(sessionIdentityLabel('Ada Lovelace', 'ada@house'), 'Ada Lovelace')
+    assert.equal(sessionIdentityLabel('', 'ada@house'), 'ada@house')
+    assert.equal(sessionIdentityLabel('   ', 'ada@house'), 'ada@house')
+    assert.equal(sessionIdentityLabel('', ''), '')
+  })
+
+  it('does not offer dead account actions without a house session', () => {
+    const layout = src('layouts/ConsoleLayout.vue')
+    const unauth = layout.slice(layout.indexOf('v-else'))
+    assert.ok(unauth.length > 0)
+    assert.doesNotMatch(unauth, /to="\/account"/)
+    assert.doesNotMatch(unauth, /to="\/billing"/)
+    assert.doesNotMatch(unauth, /auth\.logout/)
+    assert.match(unauth, /auth\.signingIn/)
+    assert.match(unauth, /auth\.identityError/)
+  })
+
+  it('keeps account, billing and sign-out copy in en and pt', () => {
+    const en = JSON.parse(src('locales/en.json'))
+    const pt = JSON.parse(src('locales/pt.json'))
+    for (const key of ['account', 'billing', 'sessionMenu']) {
+      assert.equal(typeof en.console.nav[key], 'string')
+      assert.equal(typeof pt.console.nav[key], 'string')
+      assert.notEqual(en.console.nav[key], pt.console.nav[key])
+    }
+    assert.equal(typeof en.navbar.logout, 'string')
+    assert.equal(typeof pt.navbar.logout, 'string')
+    assert.notEqual(en.navbar.logout, pt.navbar.logout)
+    assert.equal(typeof en.console.account.name, 'string')
+    assert.equal(typeof pt.console.account.name, 'string')
+    assert.equal(typeof en.console.account.email, 'string')
+    assert.equal(typeof pt.console.account.email, 'string')
+    assert.equal(typeof en.console.account.plan, 'string')
+    assert.equal(typeof pt.console.account.plan, 'string')
+  })
+})

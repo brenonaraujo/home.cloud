@@ -39,6 +39,12 @@ const TINT = {
   red: 'text-red-400'
 }
 
+export function sessionIdentityLabel(displayName, email) {
+  const name = String(displayName || '').trim()
+  if (name) return name
+  return String(email || '').trim()
+}
+
 export function useConsoleUi() {
   const { locale } = useI18n()
   const auth = useAuthStore()
@@ -57,12 +63,14 @@ export function useConsoleUi() {
   const iconWrap = (color) => WRAP[color] || WRAP.blue
   const iconColor = (color) => TINT[color] || TINT.blue
 
+  const sessionLabel = computed(() => sessionIdentityLabel(auth.displayName, auth.email))
+
   const initials = computed(() => {
-    const name = auth.displayName || auth.email || '?'
+    const name = sessionLabel.value || '?'
     const parts = String(name).trim().split(/\s+/).filter(Boolean)
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
     return String(name).slice(0, 2).toUpperCase()
   })
 
-  return { label, host, iconOf, iconWrap, iconColor, initials }
+  return { label, host, iconOf, iconWrap, iconColor, initials, sessionLabel }
 }
