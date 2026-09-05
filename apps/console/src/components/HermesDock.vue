@@ -12,24 +12,25 @@
       :inert="!dock.open"
       :aria-label="t('console.site.dockTitle')"
     >
-        <div class="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div class="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-2">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-white">{{ t('console.site.dockTitle') }}</p>
             <p class="truncate text-xs text-gray-400">{{ t('console.site.dockHint') }}</p>
           </div>
-          <button
-            type="button"
-            class="hermes-x"
-            :aria-label="t('console.site.dockClose')"
-            @click="dock.close()"
-          >
-            <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" aria-hidden="true">
-              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-            </svg>
-          </button>
+          <div class="flex shrink-0 items-center gap-1">
+            <HermesDockSessions :instance="instance" />
+            <button
+              type="button"
+              class="hermes-x"
+              :aria-label="t('console.site.dockClose')"
+              @click="dock.close()"
+            >
+              <svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" aria-hidden="true">
+                <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
-
-        <HermesDockSessions :instance="instance" />
 
         <iframe
           v-if="tuiSrc"

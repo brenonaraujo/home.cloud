@@ -230,18 +230,21 @@ describe('dock chrome contracts (#32)', () => {
     assert.equal(sessions.includes('Authorization'), false)
   })
 
-  it('lists native sessions in chrome and launches dashboard in a new surface', () => {
+  it('does not list or create sessions in chrome; dashboard stays a new surface', () => {
     const dock = readFileSync(new URL('../src/components/HermesDock.vue', import.meta.url), 'utf8')
     const chrome = readFileSync(
       new URL('../src/components/HermesDockSessions.vue', import.meta.url),
       'utf8'
     )
     assert.match(dock, /HermesDockSessions/)
-    assert.match(chrome, /hermesDashboardChatUrl/)
+    assert.match(chrome, /\bhermesDashboardUrl\b/)
     assert.match(chrome, /openNativeSurface/)
-    assert.match(chrome, /console\.site\.dockNew/)
     assert.match(chrome, /console\.site\.dockOpenDashboard/)
     assert.match(chrome, /target="_blank"/)
+    assert.equal(chrome.includes('hermesDashboardChatUrl'), false)
+    assert.equal(chrome.includes('console.site.dockNew'), false)
+    assert.equal(chrome.includes('console.site.dockSessions'), false)
+    assert.equal(chrome.includes('fetchHermesNativeSessions'), false)
     assert.equal(chrome.includes('<iframe'), false)
     assert.equal(chrome.includes('sendHermesChat'), false)
   })
@@ -254,6 +257,53 @@ describe('dock chrome contracts (#32)', () => {
     assert.doesNotMatch(store, /function close\(\) \{\s*nonce/)
     assert.match(store, /function newSession\(\)/)
     assert.match(store, /nonce\.value \+= 1/)
+  })
+})
+
+describe('conversation surface (#42)', () => {
+  const dock = readFileSync(new URL('../src/components/HermesDock.vue', import.meta.url), 'utf8')
+  const chrome = readFileSync(
+    new URL('../src/components/HermesDockSessions.vue', import.meta.url),
+    'utf8'
+  )
+  const en = JSON.parse(readFileSync(new URL('../src/locales/en.json', import.meta.url), 'utf8'))
+  const pt = JSON.parse(readFileSync(new URL('../src/locales/pt.json', import.meta.url), 'utf8'))
+
+  it('keeps the TUI iframe as the main content, not a session inventory', () => {
+    assert.match(dock, /<iframe/)
+    assert.match(dock, /min-h-0 w-full flex-1/)
+    assert.equal(dock.includes('sendHermesChat'), false)
+    assert.equal(chrome.includes('v-for="row in sessions"'), false)
+    assert.equal(chrome.includes('row.title'), false)
+    assert.equal(chrome.includes('row.lastActive'), false)
+    assert.equal(chrome.includes('startNew'), false)
+    assert.equal(chrome.includes('bg-blue-600'), false)
+  })
+
+  it('opens the native panel on the instance hostname in a new surface', () => {
+    assert.match(chrome, /\bhermesDashboardUrl\b/)
+    assert.match(chrome, /openNativeSurface/)
+    assert.match(chrome, /target="_blank"/)
+    assert.match(chrome, /rel="noopener noreferrer"/)
+    assert.equal(hermesDashboardUrl(mine).includes('console.brenon.cloud'), false)
+    assert.equal(hermesDashboardUrl(mine).startsWith('https://agent-me.brenon.cloud/'), true)
+    assert.equal(chrome.includes('brenon.cloud/console'), false)
+  })
+
+  it('fits the current conversation at 375 and 1280', () => {
+    assert.match(dock, /w-\[min\(36rem,calc\(100vw-1\.5rem\)\)\]/)
+    assert.match(dock, /h-\[min\(42rem,calc\(100(?:vh|dvh)-5\.5rem\)\)\]/)
+    assert.match(dock, /min-h-0 w-full flex-1/)
+    assert.equal(chrome.includes('max-h-40'), false)
+    assert.doesNotMatch(chrome, /border-b border-white\/10 px-4 py-4/)
+  })
+
+  it('keeps dashboard copy in en and pt without new-session chrome strings', () => {
+    assert.equal(en.console.site.dockOpenDashboard.length > 0, true)
+    assert.equal(pt.console.site.dockOpenDashboard.length > 0, true)
+    assert.equal(chrome.includes("t('console.site.dockOpenDashboard')"), true)
+    assert.equal(chrome.includes("t('console.site.dockNew')"), false)
+    assert.equal(chrome.includes("t('console.site.dockSessions')"), false)
   })
 })
 
