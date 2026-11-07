@@ -45,10 +45,13 @@ describe('shell visual language — mobile + tokens', () => {
     assert.match(layout, /Escape/)
   })
 
-  it('declares shared shell tokens (not a second lime palette)', () => {
+  // Issue #44 replaced the blue accent with the logo lime (one brand across
+  // logo, Authentik and console). Still a single palette, not a second one.
+  it('declares shared shell tokens with the logo lime as the only accent', () => {
     const css = src('style.css')
     assert.match(css, /--color-bg:\s*#030712/)
-    assert.match(css, /--color-primary:\s*#3b82f6/)
+    assert.match(css, /--color-primary:\s*#76b900/)
+    assert.equal(css.includes('#3b82f6'), false)
     assert.equal(css.includes('#a3e635'), false)
   })
 })

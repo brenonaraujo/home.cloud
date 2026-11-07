@@ -2,115 +2,60 @@
   <div>
     <ConsoleBreadcrumb :items="crumbs" />
 
-    <div v-if="catalog.loading" class="h-48 animate-pulse rounded-lg border border-white/10 bg-gray-900" />
+    <BcSkeleton v-if="catalog.loading" height-class="h-48" />
 
-    <div
+    <BcEmptyState
       v-else-if="!app"
-      class="rounded-lg border border-dashed border-white/15 px-6 py-12 text-center"
+      heading-tag="h1"
+      :icon="InboxIcon"
+      :title="t('console.services.notFoundTitle')"
+      :body="t('console.services.notFound')"
     >
-      <InboxIcon class="mx-auto h-8 w-8 text-gray-600" />
-      <h1 class="mt-4 text-2xl font-semibold text-white">{{ t('console.services.notFoundTitle') }}</h1>
-      <p class="mt-2 text-sm text-gray-400">{{ t('console.services.notFound') }}</p>
-      <router-link
-        to="/services"
-        class="mt-6 inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
-      >
-        {{ t('console.services.back') }}
-      </router-link>
-    </div>
+      <template #actions>
+        <BcButton to="/services">{{ t('console.services.back') }}</BcButton>
+      </template>
+    </BcEmptyState>
 
     <template v-else>
       <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div class="flex items-start gap-4">
-          <div
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-md"
-            :class="iconWrap(app.color)"
-          >
+        <div class="flex min-w-0 items-start gap-4">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-control" :class="iconWrap(app.color)">
             <component :is="iconOf(app.icon)" class="h-6 w-6" :class="iconColor(app.color)" />
           </div>
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.12em] text-gray-500">{{ kindLabel }}</p>
-            <h1 class="mt-1 text-3xl font-semibold tracking-tight text-white">{{ label(app.title) }}</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-gray-400">{{ label(app.description) }}</p>
+          <div class="min-w-0">
+            <p class="text-eyebrow-label">{{ kindLabel }}</p>
+            <h1 class="mt-1 break-words text-page-title text-fg">{{ label(app.title) }}</h1>
+            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted">{{ label(app.description) }}</p>
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
-            :aria-pressed="starred"
-            @click="catalog.star(app.id, auth.email)"
-          >
-            <StarSolidIcon v-if="starred" class="h-4 w-4 text-amber-400" />
-            <StarIcon v-else class="h-4 w-4" />
+          <BcButton :aria-pressed="starred ? 'true' : 'false'" @click="catalog.star(app.id, auth.email)">
+            <template #icon>
+              <StarSolidIcon v-if="starred" class="h-4 w-4 text-warning-400" />
+              <StarIcon v-else class="h-4 w-4" />
+            </template>
             {{ starred ? t('console.unstar') : t('console.star') }}
-          </button>
-          <a
-            :href="app.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500"
-            @click="catalog.visit(app.id, auth.email)"
-          >
+          </BcButton>
+          <BcButton variant="primary" :href="app.url" target="_blank" @click="catalog.visit(app.id, auth.email)">
             {{ t('console.openService') }}
-            <ExternalIcon class="h-4 w-4" />
-          </a>
+          </BcButton>
         </div>
       </div>
 
-      <h2 class="mt-10 text-sm font-semibold text-white">{{ t('console.services.details') }}</h2>
-      <dl class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-lg border border-white/10 bg-gray-900 p-4">
-          <dt class="text-xs uppercase tracking-[0.12em] text-gray-500">{{ t('console.services.host') }}</dt>
-          <dd class="mt-2">
-            <a
-              :href="app.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-mono text-sm text-gray-200 hover:text-white"
-            >{{ details.host }}</a>
-          </dd>
-        </div>
-        <div class="rounded-lg border border-white/10 bg-gray-900 p-4">
-          <dt class="text-xs uppercase tracking-[0.12em] text-gray-500">{{ t('console.services.required') }}</dt>
-          <dd class="mt-2 text-sm text-gray-200">{{ accessLabel }}</dd>
-        </div>
-        <div class="rounded-lg border border-white/10 bg-gray-900 p-4">
-          <dt class="text-xs uppercase tracking-[0.12em] text-gray-500">{{ t('console.services.plan') }}</dt>
-          <dd class="mt-2 text-sm text-gray-200">{{ planLabel }}</dd>
-        </div>
-        <div class="rounded-lg border border-white/10 bg-gray-900 p-4">
-          <dt class="text-xs uppercase tracking-[0.12em] text-gray-500">{{ t('console.services.identity') }}</dt>
-          <dd class="mt-2 text-sm text-gray-200">{{ t('console.services.identityValue') }}</dd>
-        </div>
-        <div v-if="lastOpenedLabel" class="rounded-lg border border-white/10 bg-gray-900 p-4">
-          <dt class="text-xs uppercase tracking-[0.12em] text-gray-500">{{ t('console.services.lastOpened') }}</dt>
-          <dd class="mt-2 text-sm text-gray-200" :title="lastOpenedAbsolute">{{ lastOpenedLabel }}</dd>
-          <p class="mt-1 text-xs text-gray-500">{{ t('console.services.lastOpenedHint') }}</p>
-        </div>
-      </dl>
+      <h2 class="mt-10 text-sm font-semibold text-fg">{{ t('console.services.details') }}</h2>
+      <BcDescriptionList class="mt-4" boxed columns="sm:grid-cols-2 lg:grid-cols-3" :items="detailItems" />
 
-      <section v-if="details?.bullets?.length" class="mt-8 rounded-lg border border-white/10 bg-gray-900 p-6">
-        <h2 class="text-sm font-semibold text-white">{{ t('console.services.about') }}</h2>
-        <ul class="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-gray-300">
+      <BcPanel v-if="details?.bullets?.length" class="mt-8" :title="t('console.services.about')">
+        <ul class="list-disc space-y-2 pl-5 text-sm leading-relaxed text-fg">
           <li v-for="line in details.bullets" :key="line">{{ line }}</li>
         </ul>
-        <div class="mt-6 flex flex-wrap gap-4 text-sm">
-          <a
-            v-if="details.docsUrl"
-            :href="details.docsUrl"
-            class="text-blue-300 hover:text-white"
-          >{{ t('console.services.docs') }}</a>
-          <a
-            v-if="details.statusUrl"
-            :href="details.statusUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-300 hover:text-white"
-          >{{ t('console.services.status') }}</a>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <BcButton v-if="details.docsUrl" :href="details.docsUrl" variant="ghost" size="sm">{{ t('console.services.docs') }}</BcButton>
+          <BcButton v-if="details.statusUrl" :href="details.statusUrl" target="_blank" variant="ghost" size="sm">
+            {{ t('console.services.status') }}
+          </BcButton>
         </div>
-      </section>
-      <p class="mt-4 text-xs text-gray-500">{{ t('console.services.external') }}</p>
+      </BcPanel>
     </template>
   </div>
 </template>
@@ -122,6 +67,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { useConsoleStore } from '../../stores/consoleStore'
 import { useConsoleUi } from '../../composables/useConsoleUi'
+import { usePageTitle } from '../../composables/usePageTitle.js'
 import { serviceKind } from '../../config/console-taxonomy.mjs'
 import {
   formatAbsoluteTime,
@@ -129,7 +75,8 @@ import {
   serviceDetails
 } from '../../config/console-service-details.mjs'
 import ConsoleBreadcrumb from '../../components/console/ConsoleBreadcrumb.vue'
-import { ExternalIcon, InboxIcon, StarIcon, StarSolidIcon } from '../../components/icons/Icons.js'
+import { InboxIcon, StarIcon, StarSolidIcon } from '../../components/icons/Icons.js'
+import { BcButton, BcDescriptionList, BcEmptyState, BcPanel, BcSkeleton } from '../../components/bc/index.js'
 
 const { t, te, locale } = useI18n()
 const route = useRoute()
@@ -141,6 +88,7 @@ const previousVisitAt = ref(null)
 
 const app = computed(() => catalog.appsFor(auth.groups).find((item) => item.id === route.params.id) || null)
 const starred = computed(() => app.value && catalog.isFavorite(app.value.id))
+usePageTitle(() => (app.value ? label(app.value.title) : ''))
 const details = computed(() => (app.value ? serviceDetails(app.value, locale.value) : null))
 const kindLabel = computed(() =>
   app.value && serviceKind(app.value) === 'application'
@@ -159,8 +107,20 @@ const lastOpenedLabel = computed(() =>
   formatRelativeTime(previousVisitAt.value, Date.now(), locale.value)
 )
 const lastOpenedAbsolute = computed(() => formatAbsoluteTime(previousVisitAt.value, locale.value))
+const detailItems = computed(() => {
+  if (!app.value || !details.value) return []
+  return [
+    { label: t('console.services.host'), value: details.value.host, href: app.value.url, mono: true },
+    { label: t('console.services.required'), value: accessLabel.value },
+    { label: t('console.services.availableFrom'), value: planLabel.value },
+    { label: t('console.services.identity'), value: t('console.services.identityValue') },
+    lastOpenedLabel.value
+      ? { label: t('console.services.lastOpened'), value: lastOpenedLabel.value, title: lastOpenedAbsolute.value, hint: t('console.services.lastOpenedHint') }
+      : null
+  ].filter(Boolean)
+})
 const crumbs = computed(() => [
-  { label: t('console.nav.services'), to: '/services' },
+  { label: t('console.services.title'), to: '/services' },
   { label: app.value ? label(app.value.title) : t('console.services.notFoundTitle') }
 ])
 

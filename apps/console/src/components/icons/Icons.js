@@ -302,3 +302,32 @@ export const GridIcon = strokeIcon('GridIcon', [
   h('rect', { x: '3', y: '14', width: '7', height: '7', rx: '1' }),
   h('rect', { x: '14', y: '14', width: '7', height: '7', rx: '1' })
 ])
+export const CheckIcon = strokeIcon('CheckIcon', [
+  h('circle', { cx: '12', cy: '12', r: '9' }),
+  h('path', { d: 'm8.5 12 2.5 2.5 4.5-5' })
+])
+
+export const InfoIcon = strokeIcon('InfoIcon', [
+  h('circle', { cx: '12', cy: '12', r: '9' }),
+  h('path', { d: 'M12 11v5' }),
+  h('path', { d: 'M12 8h.01' })
+])
+
+export const CopyIcon = strokeIcon('CopyIcon', [
+  h('rect', { x: '9', y: '9', width: '11', height: '11', rx: '2' }),
+  h('path', { d: 'M5 15V6a2 2 0 0 1 2-2h8' })
+])
+
+export const DotsIcon = strokeIcon('DotsIcon', [
+  h('path', { d: 'M5 12h.01M12 12h.01M19 12h.01' })
+])
+
+export const TerminalIcon = strokeIcon('TerminalIcon', [
+  h('rect', { x: '3', y: '4', width: '18', height: '16', rx: '2' }),
+  h('path', { d: 'm7 9 3 3-3 3' }),
+  h('path', { d: 'M13 15h4' })
+])
+
+export const ChatIcon = strokeIcon('ChatIcon', [
+  h('path', { d: 'M4 5h16v11H9l-5 4z' })
+])

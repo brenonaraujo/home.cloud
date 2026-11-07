@@ -84,6 +84,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Re-run the OIDC round trip so a new plan/staff group lands on this
+   * session. Authentik keeps its own SSO session, so this bounces straight
+   * back without asking for a password.
+   */
+  async function refreshSession(returnTo = PATHS.overview) {
+    if (!isLiveOidc()) return
+    await login(returnTo)
+  }
+
   function signup() {
     if (!isLiveOidc()) {
       user.value = PREVIEW_USER
@@ -143,6 +153,7 @@ export const useAuthStore = defineStore('auth', () => {
     idToken,
     hydrate,
     login,
+    refreshSession,
     signup,
     completeLogin,
     logout

@@ -1,111 +1,51 @@
 <template>
-  <section v-if="instance" class="mt-10 rounded-lg border border-white/10 bg-gray-900 p-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h2 class="text-lg font-semibold text-white">{{ t('console.site.title') }}</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-gray-400">{{ t('console.site.subtitle') }}</p>
-      </div>
-      <a
-        v-if="instance.hostname"
-        :href="'https://' + instance.hostname + '/'"
-        target="_blank"
-        rel="noopener"
-        class="inline-flex min-h-[44px] items-center text-sm text-blue-300 hover:text-blue-200"
-      >{{ t('console.site.open') }}</a>
+  <BcPanel v-if="instance" tag="section" :title="t('console.site.title')" :subtitle="t('console.site.subtitle')">
+    <template #action>
+      <BcButton v-if="instance.hostname" :href="'https://' + instance.hostname + '/'" target="_blank" size="sm">
+        {{ t('console.site.open') }}
+      </BcButton>
+    </template>
+
+    <p class="max-w-2xl text-sm leading-relaxed text-fg-muted">{{ t('console.site.agentBuilds') }}</p>
+
+    <div class="mt-4" aria-live="polite">
+      <BcAlert v-if="error" tone="danger">{{ error }}</BcAlert>
+      <BcAlert v-else-if="saved" tone="success">{{ t('console.site.saved') }}</BcAlert>
     </div>
 
-    <ul class="mt-6 max-w-2xl space-y-2 text-sm leading-relaxed text-gray-300">
-      <li><span class="font-mono text-blue-200">/</span> — {{ t('console.site.factApex') }}</li>
-      <li><span class="font-mono text-blue-200">/hermes</span> — {{ t('console.site.factChat') }}</li>
-      <li><span class="font-mono text-blue-200">/hermes/cli</span> — {{ t('console.site.factCli') }}</li>
-      <li><span class="font-mono text-blue-200">/hermes/tui</span> — {{ t('console.site.factTui') }}</li>
-      <li><span class="font-mono text-blue-200">/hermes/hooks</span> — {{ t('console.site.factHooks') }}</li>
-    </ul>
-    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-gray-400">{{ t('console.site.agentBuilds') }}</p>
+    <form class="mt-6 flex max-w-lg flex-col gap-6" @submit.prevent="save">
+      <BcCheckbox v-model="enabled">{{ t('console.site.enabled') }}</BcCheckbox>
 
-    <div v-if="instance.ready && instance.hostname" class="mt-6 flex flex-wrap gap-2">
-      <button
-        type="button"
-        class="inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-500"
-        @click="dock.startChat()"
-      >
-        {{ t('console.site.startChat') }}
-      </button>
-      <a
-        v-if="tuiHref"
-        :href="tuiHref"
-        target="_blank"
-        rel="noopener"
-        class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
-      >{{ t('console.hermes.tuiOpen') }}</a>
-      <a
-        v-if="dashboardHref"
-        :href="dashboardHref"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
-      >{{ t('console.hermes.openDashboard') }}</a>
-    </div>
-    <p v-else class="mt-6 text-sm text-gray-500">{{ t('console.hermes.starting') }}</p>
+      <BcField id="site-visibility" :label="t('console.site.visibility')" :note="visHint">
+        <template #default="{ id }">
+          <BcSelect :id="id" v-model="visibility" :options="visibilityOptions" />
+        </template>
+      </BcField>
 
-    <p v-if="error" class="mt-4 text-sm text-amber-300">{{ error }}</p>
-    <p v-else-if="saved" class="mt-4 text-sm text-emerald-300">{{ t('console.site.saved') }}</p>
-
-    <form class="mt-8 flex flex-col gap-6 border-t border-white/10 pt-8" @submit.prevent="save">
-      <label class="flex items-center gap-3 text-sm text-gray-200">
-        <input v-model="enabled" type="checkbox" class="h-4 w-4 rounded border-white/20 bg-gray-950">
-        {{ t('console.site.enabled') }}
-      </label>
-
-      <label class="flex flex-col gap-2">
-        <span class="text-sm font-medium text-gray-200">{{ t('console.site.visibility') }}</span>
-        <select v-model="visibility" class="min-h-[44px] max-w-lg rounded-md border border-white/15 bg-gray-950 px-3 text-sm text-gray-100">
-          <option value="public">{{ t('console.site.visPublic') }}</option>
-          <option value="members">{{ t('console.site.visMembers') }}</option>
-          <option value="allowlist">{{ t('console.site.visAllowlist') }}</option>
-          <option value="disabled">{{ t('console.site.visDisabled') }}</option>
-        </select>
-        <span class="text-xs text-gray-500">{{ visHint }}</span>
-      </label>
-
-      <label v-if="visibility === 'allowlist'" class="flex flex-col gap-2">
-        <span class="text-sm font-medium text-gray-200">{{ t('console.site.allowlist') }}</span>
-        <textarea
-          v-model="allowlistText"
-          rows="3"
-          class="max-w-lg rounded-md border border-white/15 bg-gray-950 px-3 py-2 text-sm text-gray-100"
-          :placeholder="t('console.site.allowlistHint')"
-        />
-      </label>
+      <BcField v-if="visibility === 'allowlist'" id="site-allowlist" :label="t('console.site.allowlist')" :hint="t('console.site.allowlistHint')">
+        <template #default="{ id, describedby }">
+          <BcTextarea :id="id" v-model="allowlistText" :rows="3" :describedby="describedby" />
+        </template>
+      </BcField>
 
       <div class="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          class="inline-flex min-h-[44px] w-fit items-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-40"
-          :disabled="saving || resetting"
-        >
+        <BcButton type="submit" variant="primary" :loading="saving" :disabled="resetting">
           {{ saving ? t('console.site.saving') : t('console.site.save') }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex min-h-[44px] w-fit items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5 disabled:opacity-40"
-          :disabled="saving || resetting"
-          @click="reset"
-        >
+        </BcButton>
+        <BcButton :loading="resetting" :disabled="saving" @click="reset">
           {{ resetting ? t('console.site.resetting') : t('console.site.reset') }}
-        </button>
+        </BcButton>
       </div>
     </form>
-  </section>
+  </BcPanel>
 </template>
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/authStore'
-import { useHermesDockStore } from '../../stores/hermesDockStore'
-import { fetchHermesSite, hermesTuiUrl, humanHermesError, resetHermesSite, saveHermesSite } from '../../api/hermesApi.js'
-import { hermesDashboardUrl } from '../../api/hermesSessions.js'
+import { fetchHermesSite, humanHermesError, resetHermesSite, saveHermesSite } from '../../api/hermesApi.js'
+import { BcAlert, BcButton, BcCheckbox, BcField, BcPanel, BcSelect, BcTextarea } from '../bc/index.js'
 
 const props = defineProps({
   instance: { type: Object, default: null }
@@ -113,7 +53,6 @@ const props = defineProps({
 
 const { t } = useI18n()
 const auth = useAuthStore()
-const dock = useHermesDockStore()
 
 const enabled = ref(true)
 const visibility = ref('public')
@@ -126,8 +65,12 @@ const resetting = ref(false)
 const saved = ref(false)
 const error = ref('')
 
-const tuiHref = computed(() => hermesTuiUrl(props.instance))
-const dashboardHref = computed(() => hermesDashboardUrl(props.instance))
+const visibilityOptions = computed(() => [
+  { value: 'public', label: t('console.site.visPublic') },
+  { value: 'members', label: t('console.site.visMembers') },
+  { value: 'allowlist', label: t('console.site.visAllowlist') },
+  { value: 'disabled', label: t('console.site.visDisabled') }
+])
 
 const visHint = computed(() => {
   if (visibility.value === 'members') return t('console.site.hintMembers')

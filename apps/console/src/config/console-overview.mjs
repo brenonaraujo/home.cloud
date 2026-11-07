@@ -9,8 +9,19 @@ export function billingSnapshot(groups) {
   }
 }
 
+const LIVE_HERMES_STATUSES = ['pending', 'provisioning', 'running', 'stopped']
+
+export function isLiveHermesInstance(row) {
+  return Boolean(row) && LIVE_HERMES_STATUSES.includes(row.status)
+}
+
+export function hasLiveHermesInstance(instances) {
+  return Array.isArray(instances) && instances.some(isLiveHermesInstance)
+}
+
+// BRL is always shown the Brazilian way (R$ 29,90), whatever the UI language.
 export function formatMoney(cents, currency = 'BRL', locale = 'en') {
-  const lang = locale === 'pt' ? 'pt-BR' : 'en-US'
+  const lang = currency === 'BRL' || locale === 'pt' ? 'pt-BR' : 'en-US'
   return new Intl.NumberFormat(lang, {
     style: 'currency',
     currency
@@ -22,7 +33,8 @@ export function currentPeriodLabel(locale = 'en', now = new Date()) {
   return new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(now)
 }
 
-export function buildNotifications({ catalogOffline = false, groups = [] } = {}) {
+// hermesInstance: true (has a live instance), false (confirmed none), null (unknown yet).
+export function buildNotifications({ catalogOffline = false, groups = [], hermesInstance = null } = {}) {
   const items = []
   if (catalogOffline) {
     items.push({
@@ -40,7 +52,7 @@ export function buildNotifications({ catalogOffline = false, groups = [] } = {})
       to: '/account'
     })
   }
-  if (canManageHermes(groups)) {
+  if (canManageHermes(groups) && hermesInstance === false) {
     items.push({
       id: 'hermes-provision',
       level: 'info',

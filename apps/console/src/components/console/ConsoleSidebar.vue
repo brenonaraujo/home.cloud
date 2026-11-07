@@ -11,16 +11,16 @@
     </transition>
 
     <aside
-      class="fixed inset-y-0 left-0 z-50 flex h-full min-h-0 w-60 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-gray-950 transition-transform duration-200 lg:static lg:h-full lg:translate-x-0"
+      class="fixed inset-y-0 left-0 z-50 flex h-full min-h-0 w-60 shrink-0 flex-col overflow-hidden border-r border-line bg-surface transition-transform duration-base lg:static lg:h-full lg:translate-x-0"
       :class="open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     >
-      <div class="flex h-14 shrink-0 items-center gap-2 border-b border-white/10 px-4">
-        <router-link to="/" class="flex min-w-0 items-center gap-2" @click="$emit('close')">
+      <div class="flex h-14 shrink-0 items-center gap-2 border-b border-line px-4">
+        <router-link to="/" class="flex min-h-target min-w-0 items-center gap-2 rounded-control" @click="$emit('close')">
           <img src="/brenon-cloud-logo.png" alt="" class="h-8 w-8" />
           <div class="min-w-0">
-            <p class="truncate text-sm font-semibold text-white">Brenon Cloud</p>
-            <p class="truncate text-[11px] uppercase tracking-[0.12em] text-gray-500">
-              {{ t('console.eyebrow') }}
+            <p class="truncate text-sm font-semibold text-fg">Brenon Cloud</p>
+            <p class="truncate text-eyebrow uppercase text-fg-subtle">
+              {{ t('console.title') }}
             </p>
           </div>
         </router-link>
@@ -33,6 +33,7 @@
               to="/"
               class="console-nav-link"
               :class="exactActive('/')"
+              :aria-current="route.path === '/' ? 'page' : undefined"
               @click="$emit('close')"
             >
               <HomeIcon class="h-4 w-4" />
@@ -43,7 +44,8 @@
             <router-link
               to="/services"
               class="console-nav-link"
-              :class="prefixActive('/services')"
+              :class="sectionActive('/services')"
+              :aria-current="route.path === '/services' ? 'page' : undefined"
               @click="$emit('close')"
             >
               <GridIcon class="h-4 w-4" />
@@ -59,16 +61,12 @@
               to="/hermes"
               class="console-nav-link"
               :class="exactActive('/hermes')"
+              :aria-current="route.path === '/hermes' ? 'page' : undefined"
               @click="$emit('close')"
             >
               <BoltIcon class="h-4 w-4" />
               <span class="flex-1">{{ t('console.nav.hermes') }}</span>
-              <span
-                class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-                :class="hermesBadgeClass"
-              >
-                {{ hermesBadge }}
-              </span>
+              <BcBadge :tone="hermesBadgeTone">{{ hermesBadge }}</BcBadge>
             </router-link>
           </li>
         </ul>
@@ -76,7 +74,7 @@
         <div v-if="favorites.length">
           <button
             type="button"
-            class="console-nav-label flex w-full cursor-pointer items-center justify-between gap-2 bg-transparent text-left hover:text-gray-300"
+            class="console-nav-label flex min-h-target w-full cursor-pointer items-center justify-between gap-2 rounded-control bg-transparent text-left hover:text-fg"
             :aria-expanded="!catalog.sidebarFavoritesHidden"
             aria-controls="console-sidebar-favorites"
             :aria-label="
@@ -102,9 +100,10 @@
                 :to="'/services/' + app.id"
                 class="console-nav-link"
                 :class="exactActive('/services/' + app.id)"
+                :aria-current="route.path === '/services/' + app.id ? 'page' : undefined"
                 @click="$emit('close')"
               >
-                <StarSolidIcon class="h-4 w-4 shrink-0 text-amber-400" />
+                <StarSolidIcon class="h-4 w-4 shrink-0 text-warning-400" />
                 <span class="truncate">{{ label(app.title) }}</span>
               </router-link>
             </li>
@@ -118,6 +117,7 @@
               :to="'/services/' + app.id"
               class="console-nav-link"
               :class="exactActive('/services/' + app.id)"
+                :aria-current="route.path === '/services/' + app.id ? 'page' : undefined"
               @click="$emit('close')"
             >
               <component :is="iconOf(app.icon)" class="h-4 w-4" :class="iconColor(app.color)" />
@@ -133,6 +133,7 @@
               :to="'/services/' + app.id"
               class="console-nav-link"
               :class="exactActive('/services/' + app.id)"
+                :aria-current="route.path === '/services/' + app.id ? 'page' : undefined"
               @click="$emit('close')"
             >
               <component :is="iconOf(app.icon)" class="h-4 w-4" :class="iconColor(app.color)" />
@@ -142,7 +143,7 @@
         </ul>
       </nav>
 
-      <div class="shrink-0 border-t border-white/10 px-2 py-4">
+      <div class="shrink-0 border-t border-line px-2 py-4">
         <ul class="flex flex-col gap-1">
           <li>
             <a
@@ -153,7 +154,8 @@
             >
               <ChartIcon class="h-4 w-4" />
               {{ t('console.nav.status') }}
-              <ExternalIcon class="ml-auto h-3 w-3 opacity-50" />
+              <ExternalIcon class="ml-auto h-4 w-4 text-fg-subtle" />
+              <span class="sr-only">{{ t('bc.newTab') }}</span>
             </a>
           </li>
           <li>
@@ -184,6 +186,7 @@ import {
   isHermesSubscriber
 } from '../../config/console-taxonomy.mjs'
 import LanguageSelector from '../ui/LanguageSelector.vue'
+import BcBadge from '../bc/BcBadge.vue'
 import {
   ArrowLeftIcon,
   BoltIcon,
@@ -221,17 +224,18 @@ const hermesBadge = computed(() => {
   return t('console.hermes.badgeSoon')
 })
 
-const hermesBadgeClass = computed(() =>
-  canManageHermes(auth.groups)
-    ? 'bg-blue-500/20 text-blue-300'
-    : 'bg-white/5 text-gray-400'
-)
+const hermesBadgeTone = computed(() => (canManageHermes(auth.groups) ? 'brand' : 'neutral'))
 
-const exactActive = (path) =>
-  route.path === path ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+const ACTIVE = 'bg-white/10 font-medium text-fg shadow-[inset_2px_0_0_theme(colors.brand.400)]'
+const IDLE = 'text-fg-muted hover:bg-white/5 hover:text-fg'
 
-const prefixActive = (path) =>
-  route.path === path || route.path.startsWith(path + '/')
-    ? 'bg-white/10 text-white'
-    : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+// Only the most specific item is active; a section parent (All services while a
+// service page is open) keeps a subtle "you are inside" tint instead.
+const exactActive = (path) => (route.path === path ? ACTIVE : IDLE)
+
+const sectionActive = (path) => {
+  if (route.path === path) return ACTIVE
+  if (route.path.startsWith(path + '/')) return 'text-fg hover:bg-white/5'
+  return IDLE
+}
 </script>

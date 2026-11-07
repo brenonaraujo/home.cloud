@@ -22,21 +22,21 @@ const ICONS = {
 }
 
 const WRAP = {
-  blue: 'bg-blue-500/15',
-  green: 'bg-emerald-500/15',
+  blue: 'bg-info-500/15',
+  green: 'bg-success-500/15',
   cyan: 'bg-cyan-500/15',
-  orange: 'bg-orange-500/15',
+  orange: 'bg-warning-500/15',
   purple: 'bg-purple-500/15',
-  red: 'bg-red-500/15'
+  red: 'bg-danger-500/15'
 }
 
 const TINT = {
-  blue: 'text-blue-400',
-  green: 'text-emerald-400',
+  blue: 'text-info-300',
+  green: 'text-success-300',
   cyan: 'text-cyan-400',
-  orange: 'text-orange-400',
-  purple: 'text-purple-400',
-  red: 'text-red-400'
+  orange: 'text-warning-300',
+  purple: 'text-purple-300',
+  red: 'text-danger-300'
 }
 
 export function sessionIdentityLabel(displayName, email) {

@@ -4,7 +4,7 @@
     :href="dashboardHref"
     target="_blank"
     rel="noopener noreferrer"
-    class="inline-flex min-h-[44px] items-center rounded-md px-2 text-xs text-gray-400 hover:bg-white/5 hover:text-gray-200"
+    class="inline-flex min-h-[44px] items-center rounded-control px-2 text-xs text-fg-muted hover:bg-white/5 hover:text-fg"
     @click.prevent="openDashboard"
   >
     {{ t('console.site.dockOpenDashboard') }}

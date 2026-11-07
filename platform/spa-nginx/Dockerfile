@@ -32,8 +32,9 @@ FROM nginxinc/nginx-unprivileged:1.27-alpine
 USER root
 # CVE-2026-31789: nginx-unprivileged:1.27-alpine ships openssl 3.3.3-r0.
 # Trivy CRITICAL gate requires 3.3.7-r0 (libcrypto3 + libssl3). Do not drop the gate.
+# CVE-2026-111497: brotli-libs 1.1.0-r2 (OOB write in decoder); fixed in 1.1.1-r0.
 RUN apk add --no-cache wget \
-    && apk upgrade --no-cache libcrypto3 libssl3 \
+    && apk upgrade --no-cache libcrypto3 libssl3 brotli-libs \
     && rm -rf /var/cache/apk/*
 
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf

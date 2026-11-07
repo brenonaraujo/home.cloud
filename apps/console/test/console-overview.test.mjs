@@ -4,7 +4,8 @@ import {
   billingSnapshot,
   buildNotifications,
   currentPeriodLabel,
-  formatMoney
+  formatMoney,
+  hasLiveHermesInstance
 } from '../src/config/console-overview.mjs'
 
 describe('billingSnapshot', () => {
@@ -20,6 +21,11 @@ describe('billingSnapshot', () => {
 describe('formatMoney / period', () => {
   it('formats BRL in pt-BR', () => {
     assert.match(formatMoney(0, 'BRL', 'pt'), /R\$\s*0/)
+  })
+
+  it('keeps BRL in pt-BR even when the UI is in English', () => {
+    assert.match(formatMoney(2990, 'BRL', 'en'), /^R\$\s29,90$/)
+    assert.match(formatMoney(0, 'BRL', 'en'), /^R\$\s0,00$/)
   })
 
   it('labels the given month', () => {
@@ -40,8 +46,32 @@ describe('buildNotifications', () => {
     assert.equal(items[0].level, 'warning')
   })
 
-  it('points hermes subscribers at the instances page', () => {
-    const items = buildNotifications({ groups: ['plan-hermes'] })
+  it('points hermes subscribers without an instance at the instances page', () => {
+    const items = buildNotifications({ groups: ['plan-hermes'], hermesInstance: false })
     assert.equal(items.some((i) => i.id === 'hermes-provision' && i.to === '/hermes'), true)
+  })
+
+  it('does not nag hermes subscribers who already have an instance', () => {
+    const items = buildNotifications({ groups: ['plan-hermes'], hermesInstance: true })
+    assert.equal(items.some((i) => i.id === 'hermes-provision'), false)
+  })
+
+  it('stays quiet while the instance state is unknown', () => {
+    const items = buildNotifications({ groups: ['plan-hermes'] })
+    assert.equal(items.some((i) => i.id === 'hermes-provision'), false)
+  })
+})
+
+describe('hasLiveHermesInstance', () => {
+  it('counts pending, provisioning, running and stopped rows', () => {
+    for (const status of ['pending', 'provisioning', 'running', 'stopped']) {
+      assert.equal(hasLiveHermesInstance([{ status }]), true, status)
+    }
+  })
+
+  it('ignores destroyed or failed rows and bad input', () => {
+    assert.equal(hasLiveHermesInstance([{ status: 'destroyed' }, { status: 'failed' }]), false)
+    assert.equal(hasLiveHermesInstance([]), false)
+    assert.equal(hasLiveHermesInstance(null), false)
   })
 })

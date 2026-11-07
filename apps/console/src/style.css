@@ -3,13 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * bc-ui tokens (docs/design-kit.md). Channels only, so Tailwind can apply
+   * opacity: bg-surface-raised/80. Contrast on surface-raised:
+   * fg-muted 6.99:1, fg-subtle 5.73:1, line-strong 3.67:1, brand-500 7.36:1.
+   */
   :root {
+    --bc-surface: 3 7 18;            /* #030712 */
+    --bc-surface-raised: 17 24 39;   /* #111827 */
+    --bc-surface-sunken: 0 0 0;      /* used at /30 for wells */
+    --bc-surface-overlay: 31 41 55;  /* #1f2937 */
+    --bc-line: 255 255 255;          /* decorative, always at /10 */
+    --bc-line-strong: 107 114 128;   /* #6b7280 — controls, >= 3:1 */
+    --bc-fg: 249 250 251;            /* #f9fafb */
+    --bc-fg-muted: 156 163 175;      /* #9ca3af */
+    --bc-fg-subtle: 139 147 161;     /* #8b93a1 — >= 4.5:1 on every surface */
+    --bc-fg-inverse: 3 7 18;         /* text on brand-500 */
+
+    /* Legacy names kept for the shell contract; they point at the brand now. */
     --color-bg: #030712;
     --color-bg-elevated: #111827;
-    --color-fg: #f3f4f6;
+    --color-fg: #f9fafb;
     --color-fg-muted: #9ca3af;
     --color-border: rgb(255 255 255 / 0.1);
-    --color-primary: #3b82f6;
+    --color-primary: #76b900;
+
+    color-scheme: dark;
   }
 
   html {
@@ -17,38 +36,49 @@
   }
 
   body {
-    @apply bg-gray-900 text-white antialiased;
+    @apply bg-surface text-fg antialiased;
     overflow-x: hidden;
+  }
+
+  /* One focus style for every control (WCAG 2.4.7). */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid theme('colors.brand.400');
+    outline-offset: 2px;
+  }
+
+  :where(input, select, textarea):focus-visible {
+    outline-offset: 0;
+  }
+
+  * {
+    scrollbar-color: rgb(var(--bc-line-strong)) transparent;
+    scrollbar-width: thin;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
-  .bg-gradient-custom {
-    @apply bg-gradient-to-r from-blue-500/10 via-transparent to-emerald-500/10;
-  }
-
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400;
+  .text-eyebrow-label {
+    @apply text-eyebrow uppercase text-fg-subtle;
   }
 
   .console-nav-link {
-    @apply flex min-h-[44px] min-w-0 items-center gap-2 rounded-md px-3 text-sm transition-colors duration-150;
+    @apply flex min-h-target min-w-0 items-center gap-2 rounded-control px-3 text-sm transition-colors duration-fast;
   }
 
   .console-nav-label {
-    @apply mb-2 mt-6 px-3 text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500;
+    @apply mb-2 mt-6 px-3 text-eyebrow uppercase text-fg-subtle;
   }
-}
-
-.console-page-enter-active,
-.console-page-leave-active {
-  transition: opacity 200ms ease, transform 200ms ease;
-}
-
-.console-page-enter-from,
-.console-page-leave-to {
-  opacity: 0;
-  transform: translateY(6px);
 }
 
 .console-drawer-enter-active,

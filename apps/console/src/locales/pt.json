@@ -26,7 +26,11 @@
       "hermesHint": "Instâncias de agentes Hermes",
       "accountHint": "Conta e plano",
       "billingHint": "Plano e faturas",
-      "notificationsHint": "Alertas da conta"
+      "notificationsHint": "Alertas da conta",
+      "open": "Buscar serviços",
+      "cancel": "Cancelar",
+      "clear": "Limpar busca",
+      "results": "Resultados da busca"
     },
     "nav": {
       "home": "Início",
@@ -46,7 +50,12 @@
       "backToSite": "Voltar ao site",
       "menu": "Abrir menu",
       "closeMenu": "Fechar menu",
-      "sessionMenu": "Menu da conta"
+      "sessionMenu": "Menu da conta",
+      "breadcrumb": "Trilha de navegação",
+      "language": "Idioma: {lang}",
+      "languageMenu": "Escolher idioma",
+      "notificationsUnread": "Notificações, {n} novas",
+      "planLink": "Plano: {plan}. Abrir faturamento"
     },
     "home": {
       "greeting": "Olá, {name}",
@@ -58,7 +67,20 @@
       "favoritesEmpty": "Marque um serviço com estrela para fixar aqui.",
       "applications": "Aplicações",
       "platform": "Plataforma",
-      "all": "Ver todos"
+      "all": "Ver todos",
+      "accountSummary": "Resumo da conta",
+      "planCard": "Plano",
+      "managePlan": "Gerenciar plano",
+      "seePlans": "Ver planos",
+      "periodCard": "Este mês",
+      "periodStripe": "Cobrança feita pelo Stripe.",
+      "periodNone": "Nada a pagar este mês.",
+      "hermesCard": "Agente Hermes",
+      "hermesNone": "Você ainda não criou sua instância.",
+      "hermesOpen": "Abrir Hermes",
+      "hermesLocked": "Seu próprio agente de IA vem com Basic e Pro.",
+      "hermesLearn": "Saiba mais",
+      "suggested": "Serviços"
     },
     "services": {
       "title": "Serviços",
@@ -73,8 +95,6 @@
       "host": "Hostname",
       "kindApplication": "Aplicação",
       "kindPlatform": "Plataforma",
-      "external": "Abre em uma nova aba",
-      "plan": "Plano",
       "about": "Sobre este serviço",
       "docs": "Saiba mais",
       "status": "Status",
@@ -83,7 +103,10 @@
       "identity": "Login",
       "identityValue": "Authentik SSO",
       "lastOpened": "Último acesso",
-      "lastOpenedHint": "Neste navegador, nesta conta."
+      "lastOpenedHint": "Neste navegador, nesta conta.",
+      "filterPlaceholder": "Filtrar serviços",
+      "matches": "{n} de {total}",
+      "availableFrom": "Disponível a partir de"
     },
     "account": {
       "title": "Conta",
@@ -94,18 +117,29 @@
       "plan": "Plano",
       "role": "Papel",
       "groups": "Grupos",
-      "groupsHint": "Se um plano ou grupo de staff acabou de ser adicionado, saia e entre de novo. A sessão congela os grupos até lá.",
       "noGroups": "Nenhum grupo nesta sessão ainda.",
       "staff": "Staff",
       "customer": "Cliente",
-      "refreshSession": "Entrar de novo"
+      "refreshSession": "Entrar de novo",
+      "access": "Acessos",
+      "accessHint": "O que esta conta pode abrir na Brenon Cloud.",
+      "accessLabels": {
+        "planPro": "Plano Pro",
+        "planBasic": "Plano Basic",
+        "planFree": "Plano Free",
+        "hermesOperator": "Operador Hermes",
+        "staff": "Equipe Brenon Cloud"
+      },
+      "refreshHint": "Use depois de mudar de plano, se um acesso novo não aparecer.",
+      "rawGroups": "Grupos técnicos ({n})",
+      "signOutTitle": "Sair",
+      "signOutHint": "Encerra a sessão neste navegador."
     },
     "billing": {
       "title": "Faturamento",
       "subtitle": "Basic e Pro incluem uma instância Hermes só sua. Basic: 2 GB RAM, 1 CPU, 5 GB. Pro: 4 GB RAM, 2 CPU, 20 GB.",
       "thisPeriod": "Este período",
       "zeroHint": "Nenhuma cobrança neste período. Planos pagos passam pelo Stripe Checkout — cartão nunca é digitado nesta página.",
-      "planHint": "Depois do pagamento, saia e entre de novo para a sessão atualizar o plano.",
       "invoices": "Faturas",
       "invoicesEmpty": "Nenhuma fatura ainda.",
       "colPeriod": "Período",
@@ -119,7 +153,7 @@
       "upgrade": "Fazer upgrade",
       "manage": "Gerenciar assinatura",
       "stripeHint": "A assinatura é sincronizada do Stripe para este control plane.",
-      "checkoutSuccess": "Pagamento recebido. Saia e entre de novo se o plano novo ainda não estiver nesta sessão.",
+      "checkoutSuccess": "Sua assinatura está ativa. Os novos acessos são atualizados automaticamente.",
       "checkoutCancel": "O checkout foi cancelado. Nada foi cobrado.",
       "needSession": "Entre de novo para o billing verificar esta conta.",
       "loadError": "Não foi possível carregar o billing no control plane.",
@@ -132,21 +166,25 @@
       "disk": "{gb} GB de disco",
       "quota": "{ram} GB RAM · {cpu} CPU · {gb} GB de disco",
       "openHermes": "Ver Hermes",
-      "features": {
-        "free": [
-          "Console, Draw e Akash Console Air",
-          "Login com a conta Brenon Cloud"
-        ],
-        "basic": [
-          "Tudo do Free",
-          "Uma instância Hermes só sua: 2 GB RAM, 1 CPU, 5 GB de disco",
-          "Faturas no portal Stripe"
-        ],
-        "pro": [
-          "Tudo do Basic",
-          "Uma instância Hermes só sua: 4 GB RAM, 2 CPU, 20 GB de disco",
-          "Mais espaço e prioridade para o agente"
-        ]
+      "subtitleShort": "Compare os planos e gerencie sua assinatura. Pagamentos pelo Stripe.",
+      "plans": "Planos",
+      "yourPlan": "Seu plano",
+      "included": "Incluído",
+      "notIncluded": "Não incluído",
+      "upgradeTo": "Mudar para {plan}",
+      "currentFree": "Grátis para sempre. Mude quando quiser.",
+      "downgradeHint": "Para mudar para este plano, use Gerenciar assinatura.",
+      "checkoutSuccessTitle": "Pagamento recebido",
+      "refreshSession": "Atualizar sessão",
+      "staleTitle": "Seu novo plano está ativo",
+      "staleBody": "Atualize a sessão para o console reconhecer os novos acessos. Você não vai precisar da senha.",
+      "row": {
+        "services": "Console, Draw e Akash Console Air",
+        "hermes": "Um agente Hermes só seu",
+        "resources": "{ram} GB RAM · {cpu} CPU · {gb} GB de disco",
+        "invoices": "Faturas no portal do Stripe",
+        "priority": "Mais espaço e prioridade para o agente",
+        "resourcesNone": "Recursos dedicados para o agente"
       }
     },
     "notifications": {
@@ -171,7 +209,8 @@
           "title": "Hermes as a Service",
           "body": "Crie sua instância em Hermes para ganhar username.brenon.cloud."
         }
-      }
+      },
+      "new": "Nova"
     },
     "hermes": {
       "eyebrow": "Agentes",
@@ -190,7 +229,7 @@
       "quota": "{ram} GB RAM · {cpu} CPU · {gb} GB de disco",
       "quotaShort": "{ram} GB RAM · {cpu} CPU · {gb} GB disco",
       "lockedTitle": "Precisa do Basic ou Pro",
-      "locked": "Uma instância Hermes só sua entra no Basic (2 GB RAM, 1 CPU, 5 GB) ou no Pro (4 GB RAM, 2 CPU, 20 GB). Faça o upgrade em Faturamento. Se você já pagou, saia e entre de novo para atualizar os grupos.",
+      "locked": "Uma instância Hermes só sua vem no Basic (2 GB RAM, 1 CPU, 5 GB) ou no Pro (4 GB RAM, 2 CPU, 20 GB). Já pagou? Atualize a sessão em Conta.",
       "instances": "Instâncias",
       "emptyTitle": "Nenhuma instância ainda",
       "empty": "Escolha um nome público para ganhar seu-nome.brenon.cloud, com webhooks prontos.",
@@ -252,7 +291,25 @@
       "tuiOpen": "Abrir Hermes no terminal",
       "openDashboard": "Abrir dashboard",
       "cliUser": "Usuário",
-      "cliPass": "Senha"
+      "cliPass": "Senha",
+      "subtitleShort": "Um agente de IA Hermes só seu, no seu próprio endereço.",
+      "seePlans": "Ver planos",
+      "createIntro": "Seu agente terá {ram} GB de RAM, {cpu} CPU e {gb} GB de disco.",
+      "address": "Endereço",
+      "chat": "Conversar com o agente",
+      "moreActions": "Mais ações",
+      "sections": "Seções da instância",
+      "tabs": {
+        "overview": "Visão geral",
+        "access": "Acesso",
+        "address": "Endereço público",
+        "page": "Página"
+      },
+      "technical": "Detalhes técnicos",
+      "dangerTitle": "Zona de perigo",
+      "dangerBody": "Excluir a instância apaga o container, as conversas, a memória, as skills e o endereço. Não dá para desfazer.",
+      "destroyType": "Digite {name} para confirmar",
+      "webhookLabel": "Endereço de webhooks"
     },
     "site": {
       "title": "Sua página",
@@ -314,6 +371,11 @@
       "basic": "Basic",
       "pro": "Pro",
       "hermes": "Hermes"
+    },
+    "notFound": {
+      "title": "Página não encontrada",
+      "body": "Este endereço não existe no console. Pode ser um favorito antigo.",
+      "back": "Ir para o início do console"
     }
   },
   "navbar": {
@@ -325,5 +387,16 @@
     "continuing": "Abrindo o console…",
     "identityError": "A identidade da casa não está disponível para um login novo. Isso não é produto fora do ar.",
     "retry": "Tentar entrar de novo"
+  },
+  "bc": {
+    "newTab": "(abre em nova aba)",
+    "copy": "Copiar {value}",
+    "copied": "Copiado",
+    "status": {
+      "starting": "Iniciando",
+      "active": "Ativa",
+      "stopped": "Parada",
+      "error": "Erro"
+    }
   }
 }
