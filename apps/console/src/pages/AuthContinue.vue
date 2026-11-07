@@ -1,10 +1,11 @@
 <template>
-  <p class="p-8 text-center text-gray-300">{{ t('auth.continuing') }}</p>
+  <BcSplash :message="t('auth.continuing')" />
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import BcSplash from '../components/bc/BcSplash.vue'
 import { useAuthStore } from '../stores/authStore'
 import { PATHS } from '../config/console-paths.mjs'
 

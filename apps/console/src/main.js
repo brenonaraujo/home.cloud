@@ -56,6 +56,10 @@ const router = createRouter({
         { path: 'account', name: 'console-account', component: ConsoleAccount, meta: { titleKey: 'console.account.title' } },
         { path: 'billing', name: 'console-billing', component: ConsoleBilling, meta: { titleKey: 'console.billing.title' } },
         { path: 'notifications', name: 'console-notifications', component: ConsoleNotifications, meta: { titleKey: 'console.notifications.title' } },
+        // Dev-only design kit; the import is dropped from production builds.
+        ...(import.meta.env.DEV
+          ? [{ path: '_kit', name: 'console-kit', component: () => import('./pages/console/Kit.vue'), meta: { title: 'Design kit' } }]
+          : []),
         { path: ':pathMatch(.*)*', name: 'console-not-found', component: ConsoleNotFound, meta: { titleKey: 'console.notFound.title' } }
       ]
     }
@@ -97,7 +101,7 @@ router.beforeEach(async (to) => {
 watchEffect(() => {
   const route = router.currentRoute.value
   const key = route.meta?.titleKey
-  const label = pageTitleOverride.value || (key ? i18n.global.t(key) : '')
+  const label = pageTitleOverride.value || (key ? i18n.global.t(key) : route.meta?.title || '')
   document.title = pageTitle(label)
   document.documentElement.lang = htmlLang(i18n.global.locale.value)
 })

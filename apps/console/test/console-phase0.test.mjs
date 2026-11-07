@@ -60,17 +60,21 @@ describe('document.title per route (#44 fase 0)', () => {
 
 describe('user menu keyboard (#44 fase 0)', () => {
   const topbar = read('src/components/console/ConsoleTopbar.vue')
+  const menu = read('src/composables/useMenu.js')
 
-  it('opens from the trigger with the arrow keys', () => {
-    assert.match(topbar, /@keydown\.down\.prevent="openMenu\(0\)"/)
-    assert.match(topbar, /@keydown\.up\.prevent="openMenu\(-1\)"/)
+  it('wires the session menu to the shared menu-button behaviour', () => {
+    assert.match(topbar, /useMenu\(\)/)
+    assert.match(topbar, /@keydown="onTriggerKey"/)
+    assert.match(topbar, /@keydown="onMenuKey"/)
   })
 
   it('handles arrows, Home/End and Esc with focus back on the trigger', () => {
     for (const key of ['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape', 'Tab']) {
-      assert.match(topbar, new RegExp(`case '${key}'`), key)
+      assert.match(menu, new RegExp(`case '${key}'`), key)
     }
-    assert.match(topbar, /closeMenu\(\{ restoreFocus: true \}\)/)
+    assert.match(menu, /closeMenu\(\{ restoreFocus: true \}\)/)
+    assert.match(menu, /event\.key === 'ArrowDown'[\s\S]*openMenu\(0\)/)
+    assert.match(menu, /event\.key === 'ArrowUp'[\s\S]*openMenu\(-1\)/)
   })
 
   it('keeps menu items out of the tab order (roving focus)', () => {

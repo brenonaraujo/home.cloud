@@ -1,10 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gray-950 text-gray-100">
+  <div class="min-h-screen bg-surface text-fg">
     <div v-if="auth.isAuthenticated" class="mx-auto max-w-lg px-4 py-16">
-      <p class="text-[11px] uppercase tracking-[0.12em] text-blue-300/80">Brenon Cloud</p>
-      <h1 class="mt-2 text-2xl font-semibold text-white">{{ t('console.site.gateTitle') }}</h1>
-      <p class="mt-3 text-sm leading-relaxed text-gray-400">{{ message }}</p>
+      <img src="/brenon-cloud-logo.png" alt="" class="h-10 w-10" />
+      <p class="mt-4 text-eyebrow-label">Brenon Cloud</p>
+      <h1 class="mt-2 text-2xl font-semibold text-fg">{{ t('console.site.gateTitle') }}</h1>
+      <p class="mt-3 text-sm leading-relaxed text-fg-muted" role="status">{{ message }}</p>
     </div>
+    <BcSplash v-else :message="t('auth.signingIn')" />
   </div>
 </template>
 
@@ -13,6 +15,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
+import BcSplash from '../../components/bc/BcSplash.vue'
 import { grantHostSession, humanHermesError } from '../../api/hermesApi.js'
 
 const { t } = useI18n()

@@ -259,15 +259,19 @@ describe('billing errors and plan copy', () => {
     assert.equal(humanBillingError(new Error('stripe price not configured'), 'soon'), 'stripe price not configured')
   })
 
-  it('keeps Pro features as a list, not a vue-i18n plural pipe', async () => {
+  it('keeps the comparable plan rows free of vue-i18n plural pipes', async () => {
     const { readFile } = await import('node:fs/promises')
     const pt = JSON.parse(await readFile(new URL('../src/locales/pt.json', import.meta.url), 'utf8'))
     const en = JSON.parse(await readFile(new URL('../src/locales/en.json', import.meta.url), 'utf8'))
-    assert.equal(Array.isArray(pt.console.billing.features.pro), true)
-    assert.equal(Array.isArray(en.console.billing.features.pro), true)
+    for (const locale of [pt, en]) {
+      const rows = locale.console.billing.row
+      for (const key of ['services', 'hermes', 'resources', 'invoices', 'priority']) {
+        assert.equal(typeof rows[key], 'string', key)
+        assert.equal(rows[key].includes('|'), false, key)
+      }
+    }
     assert.match(pt.console.billing.hermesOwn, /instância Hermes/)
     assert.match(en.console.billing.hermesOwn, /Hermes instance/)
-    assert.equal(String(pt.console.billing.features.free).includes('|'), false)
   })
 })
 

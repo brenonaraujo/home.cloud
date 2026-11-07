@@ -1,123 +1,73 @@
 <template>
-  <div class="relative inline-block text-left" ref="dropdownRef">
+  <div ref="root" class="relative inline-block text-left">
     <button
-      @click="toggleDropdown"
+      ref="trigger"
       type="button"
-      class="inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-      :aria-expanded="isOpen"
-      aria-haspopup="true"
+      class="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-control px-3 text-sm font-medium text-fg-muted transition-colors duration-fast hover:bg-white/5 hover:text-fg"
+      :aria-expanded="open ? 'true' : 'false'"
+      aria-haspopup="menu"
+      aria-controls="console-language-menu"
+      :aria-label="t('console.nav.language', { lang: current.name })"
+      @click.stop="toggleMenu"
+      @keydown="onTriggerKey"
     >
-      <span class="mr-2">{{ getCurrentLanguageFlag() }}</span>
-      <span>{{ getCurrentLanguageName() }}</span>
-      <svg 
-        class="ml-2 h-4 w-4 transition-transform duration-200" 
-        :class="{ 'rotate-180': isOpen }"
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
+      <span aria-hidden="true">{{ current.flag }}</span>
+      <span>{{ current.name }}</span>
+      <ChevronRightIcon class="h-4 w-4 transition-transform duration-fast" :class="open ? '-rotate-90' : 'rotate-90'" />
     </button>
 
-    <transition
-      enter-active-class="transition ease-out duration-100"
-      enter-from-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
-      leave-from-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
+    <div
+      v-if="open"
+      id="console-language-menu"
+      ref="list"
+      class="absolute bottom-full right-0 z-50 mb-2 w-40 rounded-overlay border border-line bg-surface-overlay py-1 shadow-lg lg:bottom-auto lg:top-full lg:mb-0 lg:mt-2"
+      role="menu"
+      :aria-label="t('console.nav.languageMenu')"
+      @keydown="onMenuKey"
     >
-      <div
-        v-show="isOpen"
-        class="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-        role="menu"
-        aria-orientation="vertical"
+      <button
+        v-for="language in LANGUAGES"
+        :key="language.code"
+        type="button"
+        role="menuitemradio"
+        :aria-checked="locale === language.code ? 'true' : 'false'"
+        tabindex="-1"
+        class="flex min-h-[44px] w-full items-center gap-3 px-4 text-sm text-fg hover:bg-white/5 focus:bg-white/10 focus:outline-none"
+        @click="select(language.code)"
       >
-        <div class="py-1" role="none">
-          <button
-            v-for="language in availableLanguages"
-            :key="language.code"
-            @click="selectLanguage(language.code)"
-            class="group flex w-full items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-            :class="{ 'bg-gray-700 text-white': currentLocale === language.code }"
-            role="menuitem"
-          >
-            <span class="mr-3">{{ language.flag }}</span>
-            <span>{{ language.name }}</span>
-            <svg
-              v-if="currentLocale === language.code"
-              class="ml-auto h-4 w-4 text-blue-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </transition>
+        <span aria-hidden="true">{{ language.flag }}</span>
+        <span>{{ language.name }}</span>
+        <CheckIcon v-if="locale === language.code" class="ml-auto h-4 w-4 text-brand-300" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useMenu } from '../../composables/useMenu.js'
+import { CheckIcon, ChevronRightIcon } from '../icons/Icons.js'
 
-const { locale } = useI18n()
-
-const isOpen = ref(false)
-const dropdownRef = ref(null)
-
-const availableLanguages = [
+const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
   { code: 'pt', name: 'Português', flag: '🇧🇷' }
 ]
 
-const currentLocale = computed(() => locale.value)
-
-const getCurrentLanguageFlag = () => {
-  const language = availableLanguages.find(lang => lang.code === currentLocale.value)
-  return language?.flag || '🌐'
-}
-
-const getCurrentLanguageName = () => {
-  const language = availableLanguages.find(lang => lang.code === currentLocale.value)
-  return language?.name || 'Language'
-}
-
-const toggleDropdown = () => {
-  isOpen.value = !isOpen.value
-}
-
-const selectLanguage = (languageCode) => {
-  locale.value = languageCode
-  localStorage.setItem('preferred-language', languageCode)
-  isOpen.value = false
-}
-
-// Close dropdown when clicking outside
-const handleClickOutside = (event) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    isOpen.value = false
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-  
-  // Load saved language preference
-  const savedLanguage = localStorage.getItem('preferred-language')
-  if (savedLanguage && availableLanguages.some(lang => lang.code === savedLanguage)) {
-    locale.value = savedLanguage
-  }
+const { t, locale } = useI18n()
+const { open, root, trigger, list, closeMenu, toggleMenu, onMenuKey, onTriggerKey } = useMenu({
+  itemSelector: '[role="menuitemradio"]'
 })
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+const current = computed(() => LANGUAGES.find((lang) => lang.code === locale.value) || LANGUAGES[0])
+
+function select(code) {
+  locale.value = code
+  try {
+    localStorage.setItem('preferred-language', code)
+  } catch {
+    /* private mode: the choice still applies to this tab */
+  }
+  closeMenu({ restoreFocus: true })
+}
 </script>

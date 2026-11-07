@@ -1,104 +1,89 @@
 <template>
   <div>
-    <ConsoleBreadcrumb :items="[{ label: t('console.nav.billing') }]" />
+    <BcPageHeader
+      :crumbs="[{ label: t('console.billing.title') }]"
+      :title="t('console.billing.title')"
+      :subtitle="t('console.billing.subtitleShort')"
+    />
 
-    <h1 class="text-3xl font-semibold tracking-tight text-white">{{ t('console.billing.title') }}</h1>
-    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-gray-400">{{ t('console.billing.subtitle') }}</p>
-
-    <p
-      v-if="flash"
-      class="mt-6 rounded-md border px-4 py-3 text-sm"
-      :class="flash.ok ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-amber-500/30 bg-amber-500/10 text-amber-200'"
-    >
-      {{ flash.text }}
-    </p>
-    <p v-if="error" class="mt-6 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-      {{ error }}
-    </p>
-
-    <div class="mt-10 grid gap-4 lg:grid-cols-3">
-      <article
-        v-for="plan in plans"
-        :key="plan.id"
-        class="flex flex-col rounded-lg border p-6"
-        :class="plan.id === currentPlan
-          ? 'border-blue-500/50 bg-blue-500/10'
-          : plan.id === 'pro'
-            ? 'border-blue-500/25 bg-gray-900'
-            : 'border-white/10 bg-gray-900'"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <p class="text-[11px] uppercase tracking-[0.12em] text-gray-500">{{ t('console.account.plan') }}</p>
-          <span
-            v-if="plan.id === 'pro' || plan.includesHermes"
-            class="rounded-full border border-blue-400/30 bg-blue-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-blue-200"
-          >
-            {{ t('console.billing.hermesBadge') }}
-          </span>
-        </div>
-        <h2 class="mt-2 text-xl font-semibold text-white">{{ planLabel(plan.id) }}</h2>
-        <p class="mt-3 text-3xl font-semibold tracking-tight text-white">{{ formatMoney(plan.amountCents, 'BRL', locale) }}</p>
-        <p class="mt-1 text-xs text-gray-500">{{ t('console.billing.perMonth') }}</p>
-        <p v-if="plan.id === 'pro' || plan.includesHermes" class="mt-4 text-sm font-medium text-blue-200">
-          {{ t('console.billing.hermesOwn') }}
-        </p>
-        <p v-if="planQuotaLine(plan).gb" class="mt-1 text-xs text-gray-400">{{ t('console.billing.quota', planQuotaLine(plan)) }}</p>
-        <p v-if="plan.id === 'pro' || plan.includesHermes" class="mt-1 text-sm leading-relaxed text-gray-400">
-          {{ t('console.billing.hermesOwnBody') }}
-        </p>
-        <ul class="mt-6 space-y-2 text-sm leading-relaxed text-gray-300">
-          <li v-for="line in planLines(plan.id)" :key="line" class="flex gap-2">
-            <span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gray-500" />
-            <span>{{ line }}</span>
-          </li>
-        </ul>
-        <div class="mt-8 flex-1" />
-        <p v-if="plan.id === currentPlan" class="text-sm text-blue-300">{{ t('console.billing.current') }}</p>
-        <div v-else-if="plan.id !== 'free'" class="flex flex-col gap-2">
-          <button
-            type="button"
-            class="inline-flex min-h-[44px] items-center justify-center rounded-md bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
-            :disabled="busy"
-            @click="upgrade(plan.id)"
-          >
-            {{ t('console.billing.upgrade') }}
-          </button>
-          <router-link
-            v-if="plan.id === 'pro' || plan.includesHermes"
-            to="/hermes"
-            class="inline-flex min-h-[44px] items-center justify-center text-sm text-blue-300 hover:text-white"
-          >
-            {{ t('console.billing.openHermes') }}
-          </router-link>
-        </div>
-      </article>
+    <div class="mt-6 flex flex-col gap-3">
+      <BcAlert v-if="flash" :tone="flash.tone" :title="flash.title">
+        {{ flash.text }}
+        <template v-if="staleSession" #actions>
+          <BcButton size="sm" :loading="refreshing" @click="refreshSession">{{ t('console.billing.refreshSession') }}</BcButton>
+        </template>
+      </BcAlert>
+      <BcAlert v-else-if="staleSession" tone="info" :title="t('console.billing.staleTitle')">
+        {{ t('console.billing.staleBody') }}
+        <template #actions>
+          <BcButton size="sm" :loading="refreshing" @click="refreshSession">{{ t('console.billing.refreshSession') }}</BcButton>
+        </template>
+      </BcAlert>
+      <BcAlert v-if="error" tone="danger">{{ error }}</BcAlert>
     </div>
 
+    <ul class="mt-8 grid gap-4 lg:grid-cols-3" :aria-label="t('console.billing.plans')">
+      <li
+        v-for="row in plans"
+        :key="row.id"
+        class="flex flex-col rounded-card border p-6"
+        :class="row.id === currentId ? 'border-brand-400/70 bg-brand-500/5' : 'border-line bg-surface-raised'"
+        :aria-current="row.id === currentId ? 'true' : undefined"
+      >
+        <div class="flex min-h-[1.5rem] flex-wrap items-center gap-2">
+          <BcBadge v-if="row.id === currentId" tone="brand">{{ t('console.billing.yourPlan') }}</BcBadge>
+          <BcBadge v-if="row.includesHermes" tone="info">{{ t('console.billing.hermesBadge') }}</BcBadge>
+        </div>
+        <h2 class="mt-3 text-xl font-semibold text-fg">{{ planLabel(row.id) }}</h2>
+        <p class="mt-2 text-3xl font-semibold tracking-tight text-fg">{{ formatMoney(row.amountCents, 'BRL', locale) }}</p>
+        <p class="mt-1 text-sm text-fg-muted">{{ t('console.billing.perMonth') }}</p>
+
+        <ul class="mt-6 space-y-3 text-sm leading-relaxed">
+          <li v-for="feature in planFeatureRows(row)" :key="feature.key" class="flex gap-3">
+            <CheckIcon v-if="feature.included" class="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
+            <CloseIcon v-else class="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" />
+            <span :class="feature.included ? 'text-fg' : 'text-fg-muted'">
+              <span class="sr-only">{{ feature.included ? t('console.billing.included') : t('console.billing.notIncluded') }}:</span>
+              {{ featureLabel(feature) }}
+            </span>
+          </li>
+        </ul>
+
+        <div class="mt-8 flex-1" />
+        <div v-if="row.id === currentId" class="flex flex-col gap-2">
+          <BcButton v-if="row.includesHermes" to="/hermes" block>{{ t('console.billing.openHermes') }}</BcButton>
+          <p v-else class="text-sm text-fg-muted">{{ t('console.billing.currentFree') }}</p>
+        </div>
+        <BcButton
+          v-else-if="row.amountCents > currentAmount"
+          variant="primary"
+          block
+          :loading="busy === row.id"
+          :disabled="Boolean(busy)"
+          @click="upgrade(row.id)"
+        >
+          {{ t('console.billing.upgradeTo', { plan: planLabel(row.id) }) }}
+        </BcButton>
+        <p v-else class="text-sm text-fg-muted">{{ t('console.billing.downgradeHint') }}</p>
+      </li>
+    </ul>
+
     <div class="mt-10 grid gap-6 lg:grid-cols-3">
-      <section class="rounded-lg border border-white/10 bg-gray-900 p-6 lg:col-span-2">
-        <p class="text-[11px] uppercase tracking-[0.12em] text-gray-500">{{ t('console.billing.thisPeriod') }}</p>
-        <p class="mt-2 text-sm text-gray-400">{{ period }}</p>
-        <p class="mt-4 text-4xl font-semibold tracking-tight text-white">{{ amount }}</p>
-        <p class="mt-4 max-w-xl text-sm leading-relaxed text-gray-400">
+      <BcPanel class="lg:col-span-2" :title="t('console.billing.thisPeriod')">
+        <p class="text-sm capitalize text-fg-muted">{{ period }}</p>
+        <p class="mt-3 text-4xl font-semibold tracking-tight text-fg">{{ amount }}</p>
+        <p class="mt-4 max-w-xl text-sm leading-relaxed text-fg-muted">
           {{ entitlement.status && entitlement.status !== 'none' ? t('console.billing.stripeHint') : t('console.billing.zeroHint') }}
         </p>
-      </section>
-      <section class="rounded-lg border border-white/10 bg-gray-900 p-6">
-        <h2 class="text-sm font-semibold text-white">{{ t('console.billing.payment') }}</h2>
-        <p class="mt-2 text-sm leading-relaxed text-gray-400">
+      </BcPanel>
+      <BcPanel :title="t('console.billing.payment')">
+        <p class="text-sm leading-relaxed text-fg-muted">
           {{ entitlement.customerId ? t('console.billing.paymentReady') : t('console.billing.paymentEmpty') }}
         </p>
-        <button
-          v-if="entitlement.customerId"
-          type="button"
-          class="mt-6 inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5 disabled:opacity-50"
-          :disabled="busy"
-          @click="portal"
-        >
-          {{ t('console.billing.manage') }}
-        </button>
-        <p class="mt-4 text-xs text-gray-500">{{ t('console.billing.planHint') }}</p>
-      </section>
+        <div v-if="entitlement.customerId" class="mt-6">
+          <BcButton :loading="busy === 'portal'" :disabled="Boolean(busy)" @click="portal">{{ t('console.billing.manage') }}</BcButton>
+        </div>
+      </BcPanel>
     </div>
   </div>
 </template>
@@ -109,63 +94,74 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { useEntitlementStore } from '../../stores/entitlementStore'
-import { displayPlan } from '../../config/console-taxonomy.mjs'
 import { currentPeriodLabel, formatMoney } from '../../config/console-overview.mjs'
 import { humanBillingError } from '../../config/console-billing.mjs'
+import { needsSessionRefresh, planFeatureRows, planInfo } from '../../config/console-plans.mjs'
 import { FALLBACK_PLANS, startCheckout, startPortal } from '../../api/billingApi.js'
-import ConsoleBreadcrumb from '../../components/console/ConsoleBreadcrumb.vue'
+import { usePlan } from '../../composables/usePlan.js'
+import { CheckIcon, CloseIcon } from '../../components/icons/Icons.js'
+import { BcAlert, BcBadge, BcButton, BcPageHeader, BcPanel } from '../../components/bc/index.js'
 
-const { t, te, tm, locale } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
 const entitlement = useEntitlementStore()
+const { id: currentPlan, planLabel } = usePlan()
+
+const REFRESH_KEY = 'bc-checkout-session-refresh'
 
 const plans = FALLBACK_PLANS
 const error = ref('')
-const busy = ref(false)
+const busy = ref('')
+const refreshing = ref(false)
 
-const currentPlan = computed(() => displayPlan(auth.groups, entitlement.billing))
-const amount = computed(() => {
-  const row = plans.find((p) => p.id === currentPlan.value)
-  return formatMoney(row?.amountCents || 0, 'BRL', locale.value)
-})
+// Legacy plan-hermes maps to Basic, so the right card is marked.
+const currentId = computed(() => planInfo(currentPlan.value).id)
+const currentAmount = computed(() => planInfo(currentPlan.value).amountCents)
+const amount = computed(() => formatMoney(currentAmount.value, 'BRL', locale.value))
 const period = computed(() => currentPeriodLabel(locale.value))
+const staleSession = computed(() => needsSessionRefresh(auth.groups, entitlement.billing))
+
 const flash = computed(() => {
-  if (route.query.checkout === 'success') {
-    return { ok: true, text: t('console.billing.checkoutSuccess') }
+  const state = route.query.checkout
+  if (state === 'success') {
+    return { tone: 'success', title: t('console.billing.checkoutSuccessTitle'), text: t('console.billing.checkoutSuccess') }
   }
-  if (route.query.checkout === 'cancel') {
-    return { ok: false, text: t('console.billing.checkoutCancel') }
-  }
+  if (state === 'cancel') return { tone: 'info', title: '', text: t('console.billing.checkoutCancel') }
   return null
 })
 
-function planLabel(id) {
-  const key = `console.plan.${id}`
-  return te(key) ? t(key) : id
+function featureLabel(feature) {
+  if (feature.key === 'resources' && !feature.included) return t('console.billing.row.resourcesNone')
+  return t(`console.billing.row.${feature.key}`, feature.values || {})
 }
 
-function planLines(id) {
-  const key = `console.billing.features.${id}`
-  if (!te(key)) return []
-  const value = tm(key)
-  if (Array.isArray(value)) return value.map((s) => String(s).trim()).filter(Boolean)
-  return []
+function readFlag() {
+  try {
+    return sessionStorage.getItem(REFRESH_KEY)
+  } catch {
+    return '1'
+  }
 }
 
-function planDisk(plan) {
-  if (plan?.diskGb) return Number(plan.diskGb)
-  if (plan?.id === 'pro') return 20
-  if (plan?.id === 'basic' || plan?.includesHermes) return 5
-  return 0
+function writeFlag() {
+  try {
+    sessionStorage.setItem(REFRESH_KEY, '1')
+  } catch {
+    /* without storage we never auto-refresh */
+  }
 }
 
-function planQuotaLine(plan) {
-  const gb = planDisk(plan)
-  if (!gb) return { ram: 0, cpu: 0, gb: 0 }
-  if (plan?.memoryGb) return { ram: Number(plan.memoryGb), cpu: Number(plan.cpus || 1), gb }
-  if (plan?.id === 'pro') return { ram: 4, cpu: 2, gb: 20 }
-  return { ram: 2, cpu: 1, gb }
+async function refreshSession() {
+  refreshing.value = true
+  writeFlag()
+  try {
+    await auth.refreshSession('/billing')
+  } catch {
+    error.value = t('console.billing.needSession')
+  } finally {
+    refreshing.value = false
+  }
 }
 
 async function upgrade(plan) {
@@ -174,29 +170,32 @@ async function upgrade(plan) {
     error.value = t('console.billing.needSession')
     return
   }
-  busy.value = true
+  busy.value = plan
   try {
     window.location.href = await startCheckout(auth.idToken, plan)
   } catch (err) {
     error.value = humanBillingError(err, t('console.billing.checkoutSoon'))
-    busy.value = false
+    busy.value = ''
   }
 }
 
 async function portal() {
   error.value = ''
-  busy.value = true
+  busy.value = 'portal'
   try {
     window.location.href = await startPortal(auth.idToken)
   } catch (err) {
     error.value = humanBillingError(err, t('console.billing.portalError'))
-    busy.value = false
+    busy.value = ''
   }
 }
 
 onMounted(async () => {
   if (route.query.checkout === 'success' && auth.idToken) {
     await entitlement.load(auth.idToken, auth.email, { force: true })
+    // Stripe says paid but the session still has the old groups: refresh once,
+    // automatically, so Hermes and paid services open without signing out.
+    if (staleSession.value && !readFlag()) await refreshSession()
   }
 })
 </script>

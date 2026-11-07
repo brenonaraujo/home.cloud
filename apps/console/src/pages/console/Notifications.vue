@@ -1,42 +1,45 @@
 <template>
   <div>
-    <ConsoleBreadcrumb :items="[{ label: t('console.nav.notifications') }]" />
+    <BcPageHeader
+      :crumbs="[{ label: t('console.notifications.title') }]"
+      :title="t('console.notifications.title')"
+      :subtitle="t('console.notifications.subtitle')"
+    />
 
-    <h1 class="text-3xl font-semibold tracking-tight text-white">{{ t('console.notifications.title') }}</h1>
-    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-gray-400">{{ t('console.notifications.subtitle') }}</p>
-
-    <div
+    <BcEmptyState
       v-if="!notes.length"
-      class="mt-10 rounded-lg border border-dashed border-white/15 px-6 py-12 text-center"
-    >
-      <BellIcon class="mx-auto h-8 w-8 text-gray-600" />
-      <h2 class="mt-4 text-lg font-semibold text-white">{{ t('console.notifications.emptyTitle') }}</h2>
-      <p class="mt-2 text-sm text-gray-400">{{ t('console.notifications.empty') }}</p>
-    </div>
+      class="mt-10"
+      :icon="BellIcon"
+      :title="t('console.notifications.emptyTitle')"
+      :body="t('console.notifications.empty')"
+    />
 
     <template v-else>
-      <ul class="mt-10 divide-y divide-white/10 rounded-lg border border-white/10 bg-gray-900">
+      <ul class="mt-10 divide-y divide-line rounded-card border border-line bg-surface-raised">
         <li v-for="note in page.items" :key="note.id">
           <component
             :is="note.to ? 'router-link' : 'div'"
             :to="note.to || undefined"
             class="flex items-start gap-4 px-4 py-4"
-            :class="note.to ? 'transition-colors hover:bg-white/5' : ''"
+            :class="note.to ? 'transition-colors duration-fast hover:bg-white/5' : ''"
           >
             <span
-              class="mt-1 h-2 w-2 shrink-0 rounded-full"
-              :class="isUnread(note.id) ? (note.level === 'warning' ? 'bg-amber-400' : 'bg-blue-400') : 'bg-gray-600'"
-              :aria-hidden="true"
+              class="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+              :class="unread[note.id] ? (note.level === 'warning' ? 'bg-warning-400' : 'bg-brand-400') : 'bg-fg-subtle/40'"
+              aria-hidden="true"
             />
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium" :class="isUnread(note.id) ? 'text-white' : 'text-gray-400'">
+              <p class="flex flex-wrap items-center gap-2 text-sm font-medium" :class="unread[note.id] ? 'text-fg' : 'text-fg-muted'">
                 {{ t('console.notifications.items.' + note.key + '.title') }}
+                <BcBadge v-if="unread[note.id]" :tone="note.level === 'warning' ? 'warning' : 'brand'">
+                  {{ t('console.notifications.new') }}
+                </BcBadge>
               </p>
-              <p class="mt-1 text-sm leading-relaxed text-gray-500">
+              <p class="mt-1 text-sm leading-relaxed text-fg-muted">
                 {{ t('console.notifications.items.' + note.key + '.body') }}
               </p>
             </div>
-            <ChevronRightIcon v-if="note.to" class="mt-1 h-4 w-4 shrink-0 text-gray-600" />
+            <ChevronRightIcon v-if="note.to" class="mt-1 h-4 w-4 shrink-0 text-fg-subtle" />
           </component>
         </li>
       </ul>
@@ -46,36 +49,16 @@
         class="mt-6 flex flex-wrap items-center justify-between gap-4"
         :aria-label="t('console.notifications.pagination')"
       >
-        <p class="text-sm text-gray-500">
+        <p class="text-sm text-fg-muted">
           {{ t('console.notifications.pageOf', { page: page.page, pages: page.pages, total: page.total }) }}
         </p>
         <div class="flex gap-2">
-          <router-link
-            v-if="page.page > 1"
-            :to="{ query: { page: page.page - 1 } }"
-            class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
-          >
+          <BcButton :to="page.page > 1 ? { query: { page: page.page - 1 } } : ''" :disabled="page.page <= 1">
             {{ t('console.notifications.prev') }}
-          </router-link>
-          <span
-            v-else
-            class="inline-flex min-h-[44px] items-center rounded-md border border-white/5 px-4 text-sm text-gray-600"
-          >
-            {{ t('console.notifications.prev') }}
-          </span>
-          <router-link
-            v-if="page.page < page.pages"
-            :to="{ query: { page: page.page + 1 } }"
-            class="inline-flex min-h-[44px] items-center rounded-md border border-white/15 px-4 text-sm text-gray-200 hover:bg-white/5"
-          >
+          </BcButton>
+          <BcButton :to="page.page < page.pages ? { query: { page: page.page + 1 } } : ''" :disabled="page.page >= page.pages">
             {{ t('console.notifications.next') }}
-          </router-link>
-          <span
-            v-else
-            class="inline-flex min-h-[44px] items-center rounded-md border border-white/5 px-4 text-sm text-gray-600"
-          >
-            {{ t('console.notifications.next') }}
-          </span>
+          </BcButton>
         </div>
       </nav>
     </template>
@@ -83,7 +66,7 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
@@ -91,8 +74,8 @@ import { useConsoleStore } from '../../stores/consoleStore'
 import { useHermesInstanceStore } from '../../stores/hermesInstanceStore'
 import { buildNotifications } from '../../config/console-overview.mjs'
 import { paginate } from '../../config/console-prefs.mjs'
-import ConsoleBreadcrumb from '../../components/console/ConsoleBreadcrumb.vue'
 import { BellIcon, ChevronRightIcon } from '../../components/icons/Icons.js'
+import { BcBadge, BcButton, BcEmptyState, BcPageHeader } from '../../components/bc/index.js'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -104,11 +87,19 @@ const notes = computed(() =>
   buildNotifications({ catalogOffline: Boolean(catalog.error), groups: auth.groups, hermesInstance: hermesInstance.hasInstance })
 )
 const page = computed(() => paginate(notes.value, route.query.page))
-const isUnread = (id) => !catalog.isNoteRead(id)
+
+// Snapshot "unread" before marking the page as read, so "New" stays visible
+// for this visit instead of disappearing as soon as the page renders.
+const unread = ref({})
 
 watch(
   [page, () => auth.email],
   ([current, email]) => {
+    const next = { ...unread.value }
+    for (const note of current.items) {
+      if (!(note.id in next)) next[note.id] = !catalog.isNoteRead(note.id)
+    }
+    unread.value = next
     if (email && current.items.length) {
       catalog.markNotesRead(current.items.map((n) => n.id), email)
     }

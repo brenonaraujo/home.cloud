@@ -1,11 +1,12 @@
 <template>
-  <p class="p-8 text-center text-gray-300">{{ t('auth.completing') }}</p>
+  <BcSplash :message="t('auth.completing')" />
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import BcSplash from '../components/bc/BcSplash.vue'
 import { useAuthStore } from '../stores/authStore'
 import { PATHS } from '../config/console-paths.mjs'
 
