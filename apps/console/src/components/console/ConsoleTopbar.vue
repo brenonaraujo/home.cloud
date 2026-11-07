@@ -53,12 +53,16 @@
 
     <div class="relative shrink-0" ref="menuRoot">
       <button
+        ref="menuTrigger"
         type="button"
         class="inline-flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-md border border-white/10 px-2 py-1 text-sm text-gray-200 transition-colors hover:border-white/20 hover:text-white"
         :aria-label="t('console.nav.sessionMenu')"
         :aria-expanded="menuOpen"
         aria-haspopup="menu"
-        @click.stop="menuOpen = !menuOpen"
+        aria-controls="console-session-menu"
+        @click.stop="toggleMenu"
+        @keydown.down.prevent="openMenu(0)"
+        @keydown.up.prevent="openMenu(-1)"
       >
         <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
           {{ initials }}
@@ -67,8 +71,12 @@
       </button>
       <div
         v-if="menuOpen"
+        id="console-session-menu"
+        ref="menuList"
         class="absolute right-0 z-50 mt-2 w-56 rounded-md border border-white/10 bg-gray-900 py-1 shadow-xl"
         role="menu"
+        :aria-label="t('console.nav.sessionMenu')"
+        @keydown="onMenuKey"
       >
         <div class="border-b border-white/10 px-3 py-2">
           <p class="truncate text-sm text-white">{{ sessionLabel }}</p>
@@ -80,7 +88,8 @@
           to="/account"
           class="flex min-h-[44px] items-center px-3 text-sm text-gray-200 hover:bg-white/5"
           role="menuitem"
-          @click="menuOpen = false"
+          tabindex="-1"
+          @click="closeMenu()"
         >
           {{ t('console.nav.account') }}
         </router-link>
@@ -88,7 +97,8 @@
           to="/billing"
           class="flex min-h-[44px] items-center px-3 text-sm text-gray-200 hover:bg-white/5"
           role="menuitem"
-          @click="menuOpen = false"
+          tabindex="-1"
+          @click="closeMenu()"
         >
           {{ t('console.nav.billing') }}
         </router-link>
@@ -96,6 +106,7 @@
           type="button"
           class="flex min-h-[44px] w-full items-center px-3 text-left text-sm text-gray-400 hover:bg-white/5 hover:text-white"
           role="menuitem"
+          tabindex="-1"
           @click="auth.logout()"
         >
           {{ t('navbar.logout') }}
@@ -106,11 +117,13 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { SITE_HOME } from '../../config/console-paths.mjs'
 import { useAuthStore } from '../../stores/authStore'
 import { useConsoleStore } from '../../stores/consoleStore'
+import { useHermesInstanceStore } from '../../stores/hermesInstanceStore'
 import { displayPlan } from '../../config/console-taxonomy.mjs'
 import { useEntitlementStore } from '../../stores/entitlementStore'
 import { buildNotifications } from '../../config/console-overview.mjs'
@@ -125,10 +138,14 @@ defineEmits(['toggle-sidebar'])
 const { t, te } = useI18n()
 const auth = useAuthStore()
 const catalog = useConsoleStore()
+const hermesInstance = useHermesInstanceStore()
 const entitlement = useEntitlementStore()
 const { initials, sessionLabel } = useConsoleUi()
+const route = useRoute()
 const menuOpen = ref(false)
 const menuRoot = ref(null)
+const menuTrigger = ref(null)
+const menuList = ref(null)
 
 const planLabel = computed(() => {
   const plan = displayPlan(auth.groups, entitlement.billing)
@@ -136,13 +153,73 @@ const planLabel = computed(() => {
 })
 
 const noteCount = computed(() => unreadNotifications(
-  buildNotifications({ catalogOffline: Boolean(catalog.error), groups: auth.groups }),
+  buildNotifications({ catalogOffline: Boolean(catalog.error), groups: auth.groups, hermesInstance: hermesInstance.hasInstance }),
   catalog.readNotificationIds
 ).length)
+
+function menuItems() {
+  return Array.from(menuList.value?.querySelectorAll('[role="menuitem"]') || [])
+}
+
+function focusItem(index) {
+  const items = menuItems()
+  if (!items.length) return
+  items[(index + items.length) % items.length].focus()
+}
+
+async function openMenu(index = 0) {
+  menuOpen.value = true
+  await nextTick()
+  focusItem(index)
+}
+
+function closeMenu({ restoreFocus = false } = {}) {
+  menuOpen.value = false
+  if (restoreFocus) menuTrigger.value?.focus()
+}
+
+function toggleMenu() {
+  if (menuOpen.value) closeMenu()
+  else openMenu(0)
+}
+
+// WAI-ARIA menu button: arrows move, Home/End jump, Esc closes back to the trigger.
+function onMenuKey(event) {
+  const items = menuItems()
+  const current = items.indexOf(document.activeElement)
+  switch (event.key) {
+    case 'ArrowDown':
+      event.preventDefault()
+      focusItem(current + 1)
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      focusItem(current - 1)
+      break
+    case 'Home':
+      event.preventDefault()
+      focusItem(0)
+      break
+    case 'End':
+      event.preventDefault()
+      focusItem(-1)
+      break
+    case 'Escape':
+      event.preventDefault()
+      event.stopPropagation()
+      closeMenu({ restoreFocus: true })
+      break
+    case 'Tab':
+      closeMenu()
+      break
+  }
+}
 
 const onDocClick = (event) => {
   if (!menuRoot.value?.contains(event.target)) menuOpen.value = false
 }
+
+watch(() => route.fullPath, () => closeMenu())
 
 onMounted(() => document.addEventListener('click', onDocClick))
 onBeforeUnmount(() => document.removeEventListener('click', onDocClick))

@@ -314,6 +314,11 @@
       "basic": "Basic",
       "pro": "Pro",
       "hermes": "Hermes"
+    },
+    "notFound": {
+      "title": "Página não encontrada",
+      "body": "Este endereço não existe no console. Pode ser um favorito antigo.",
+      "back": "Ir para o início do console"
     }
   },
   "navbar": {

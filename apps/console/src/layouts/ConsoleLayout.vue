@@ -40,6 +40,8 @@ import { SITE_HOME } from '../config/console-paths.mjs'
 import { useAuthStore } from '../stores/authStore'
 import { useConsoleStore } from '../stores/consoleStore'
 import { useEntitlementStore } from '../stores/entitlementStore'
+import { useHermesInstanceStore } from '../stores/hermesInstanceStore'
+import { canManageHermes } from '../config/console-taxonomy.mjs'
 import ConsoleSidebar from '../components/console/ConsoleSidebar.vue'
 import ConsoleTopbar from '../components/console/ConsoleTopbar.vue'
 import ConsoleBanner from '../components/console/ConsoleBanner.vue'
@@ -50,6 +52,7 @@ const route = useRoute()
 const auth = useAuthStore()
 const catalog = useConsoleStore()
 const entitlement = useEntitlementStore()
+const hermesInstance = useHermesInstanceStore()
 const sidebarOpen = ref(false)
 
 const onKey = (event) => {
@@ -72,6 +75,7 @@ watch(
       entitlement.hydrate(auth.email)
     }
     if (auth.idToken) entitlement.load(auth.idToken, auth.email)
+    if (auth.idToken && canManageHermes(auth.groups)) hermesInstance.load(auth.idToken)
   },
   { immediate: true }
 )

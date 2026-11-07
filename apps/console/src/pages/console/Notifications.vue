@@ -88,6 +88,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { useConsoleStore } from '../../stores/consoleStore'
+import { useHermesInstanceStore } from '../../stores/hermesInstanceStore'
 import { buildNotifications } from '../../config/console-overview.mjs'
 import { paginate } from '../../config/console-prefs.mjs'
 import ConsoleBreadcrumb from '../../components/console/ConsoleBreadcrumb.vue'
@@ -97,9 +98,10 @@ const { t } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
 const catalog = useConsoleStore()
+const hermesInstance = useHermesInstanceStore()
 
 const notes = computed(() =>
-  buildNotifications({ catalogOffline: Boolean(catalog.error), groups: auth.groups })
+  buildNotifications({ catalogOffline: Boolean(catalog.error), groups: auth.groups, hermesInstance: hermesInstance.hasInstance })
 )
 const page = computed(() => paginate(notes.value, route.query.page))
 const isUnread = (id) => !catalog.isNoteRead(id)

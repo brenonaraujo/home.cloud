@@ -233,12 +233,15 @@ import {
   stripAgentPrefix
 } from '../../api/hermesApi.js'
 import { hermesDashboardUrl } from '../../api/hermesSessions.js'
+import { hasLiveHermesInstance, isLiveHermesInstance } from '../../config/console-overview.mjs'
+import { useHermesInstanceStore } from '../../stores/hermesInstanceStore'
 import ConsoleBreadcrumb from '../../components/console/ConsoleBreadcrumb.vue'
 import ConsoleHostPage from '../../components/console/ConsoleHostPage.vue'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const dock = useHermesDockStore()
+const hermesInstance = useHermesInstanceStore()
 
 const canManage = computed(() => canManageHermes(auth.groups))
 const operator = computed(() => isHermesOperator(auth.groups))
@@ -265,13 +268,9 @@ const defaultName = computed(() => {
   return slugify(local)
 })
 
-const hasLive = computed(() =>
-  instances.value.some((row) => ['pending', 'provisioning', 'running', 'stopped'].includes(row.status))
-)
+const hasLive = computed(() => hasLiveHermesInstance(instances.value))
 const pageInstance = computed(() => {
-  const live = instances.value.filter((row) =>
-    ['running', 'provisioning', 'pending', 'stopped'].includes(row.status)
-  )
+  const live = instances.value.filter(isLiveHermesInstance)
   return live.find((row) => row.email === auth.email) || live[0] || null
 })
 const previewSlug = computed(() => agentSlug(publicName.value || defaultName.value))
@@ -320,6 +319,7 @@ async function load(quiet = false) {
   try {
     const data = await fetchHermesInstances(auth.idToken)
     instances.value = Array.isArray(data.instances) ? data.instances : []
+    hermesInstance.sync(instances.value)
     syncPublicName()
   } catch (err) {
     if (!quiet) {
@@ -339,6 +339,7 @@ async function create() {
     const row = await createHermesInstance(auth.idToken, previewSlug.value)
     if (row?.id) {
       instances.value = [row, ...instances.value.filter((x) => x.id !== row.id)]
+      hermesInstance.sync(instances.value)
       syncPublicName()
     } else {
       await load()
@@ -381,6 +382,7 @@ async function destroy() {
     await deleteHermesInstance(auth.idToken, row.id)
     pending.value = null
     instances.value = instances.value.filter((x) => x.id !== row.id)
+    hermesInstance.sync(instances.value)
     publicName.value = defaultName.value
   } catch (err) {
     error.value = humanHermesError(err, t('console.hermes.destroyFallback'))

@@ -122,6 +122,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { useConsoleStore } from '../../stores/consoleStore'
 import { useConsoleUi } from '../../composables/useConsoleUi'
+import { usePageTitle } from '../../composables/usePageTitle.js'
 import { serviceKind } from '../../config/console-taxonomy.mjs'
 import {
   formatAbsoluteTime,
@@ -141,6 +142,7 @@ const previousVisitAt = ref(null)
 
 const app = computed(() => catalog.appsFor(auth.groups).find((item) => item.id === route.params.id) || null)
 const starred = computed(() => app.value && catalog.isFavorite(app.value.id))
+usePageTitle(() => (app.value ? label(app.value.title) : ''))
 const details = computed(() => (app.value ? serviceDetails(app.value, locale.value) : null))
 const kindLabel = computed(() =>
   app.value && serviceKind(app.value) === 'application'
