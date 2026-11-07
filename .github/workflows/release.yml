@@ -99,8 +99,11 @@ jobs:
           echo "sha_short=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
           echo "latest=true" >> "$GITHUB_OUTPUT"
 
+  # github-release is skipped on tag push / dispatch. Without always() the
+  # implicit success() would skip every job downstream of it, transitively.
   sensors:
     needs: [resolve-tag]
+    if: always() && !cancelled() && needs.resolve-tag.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -142,6 +145,7 @@ jobs:
 
   publish:
     needs: [resolve-tag, sensors]
+    if: always() && !cancelled() && needs.resolve-tag.result == 'success' && needs.sensors.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -225,7 +229,7 @@ jobs:
 
   webhook:
     needs: [publish]
-    if: needs.publish.result == 'success' && needs.publish.outputs.digest != ''
+    if: always() && !cancelled() && needs.publish.result == 'success' && needs.publish.outputs.digest != ''
     runs-on: ubuntu-latest
     steps:
       - name: POST Portainer webhook (stack brenon-console, after digest)
