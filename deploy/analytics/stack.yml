@@ -1,0 +1,221 @@
+# analytics — Umami (analytics de uso da casa), Swarm do lab.
+#
+# Rito: docs/add-a-service.md. Classe: plataforma (medição compartilhada
+# por todos os produtos; quem vê o painel é staff).
+#
+# Este arquivo é a intenção versionada; quem aplica é o Portainer (stack
+# `analytics`, endpoint 3) pelo `create-stack.sh` ao lado.
+#
+# Variáveis da stack (ambiente do Portainer, nunca no git):
+#   POSTGRES_PASSWORD      senha do banco (gerada uma vez)
+#   APP_SECRET             segredo de sessão do Umami (gerado uma vez)
+#   OIDC_CLIENT_SECRET     client secret do provider `analytics` no Authentik
+#   COOKIE_SECRET          segredo do cookie do oauth2-proxy (gerado uma vez)
+#   UMAMI_ADMIN_PASSWORD   senha de máquina do `admin` do Umami (gerada uma
+#                          vez; ninguém a digita, só a ponte a usa)
+#
+# Imagem: oficial, tag fixa. Subir de versão = trocar a tag aqui e
+# reaplicar (UPDATE=1). As migrations do Umami rodam na largada.
+#
+# Borda: só o `sso` (oauth2-proxy) é publicado (porta 18092, ingress do
+# Swarm), origem do hostname analytics.brenon.cloud no túnel home-server.
+# No lab a malha de ingress só responde no nó que roda a task (label
+# vserver). Umami, ponte e banco ficam só na rede interna.
+#
+# Identidade, igual aos demais serviços da casa: quem entra passa pelo
+# Authentik (provider `analytics`, grupo brenon-admins). Ficam de fora do
+# portão só as duas rotas de coleta, públicas por desenho: /script.js e
+# /api/send. O Umami não fala OIDC, então a rota /login dele é trocada
+# pela `bridge`, que entra no Umami como `admin` e entrega a sessão ao
+# navegador: quem passou pelo SSO nunca vê a tela de login do Umami.
+
+version: "3.9"
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_USER: umami
+      POSTGRES_DB: umami
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD na stack}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    logging: *logging
+    deploy:
+      replicas: 1
+      # O volume é local ao nó: o banco não pode trocar de nó.
+      placement:
+        constraints: [node.labels.vserver == true]
+      resources:
+        limits: { memory: 512M, cpus: "1.0" }
+        reservations: { memory: 128M, cpus: "0.1" }
+      restart_policy: { condition: any, delay: 5s }
+      update_config: { parallelism: 1, order: stop-first, failure_action: rollback }
+      labels:
+        - "home.cloud.app=analytics"
+        - "traefik.enable=false"
+
+  umami:
+    image: ghcr.io/umami-software/umami:3.5.0
+    environment:
+      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@postgres:5432/umami
+      APP_SECRET: ${APP_SECRET:?defina APP_SECRET na stack}
+      # Nada sai do lab: sem telemetria para o projeto e sem checagem de
+      # versão nova.
+      DISABLE_TELEMETRY: "1"
+      DISABLE_UPDATES: "1"
+    networks: [internal]
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/heartbeat').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    logging: *logging
+    deploy:
+      replicas: 1
+      # Mesmo nó do banco: no lab a overlay não cruza nós.
+      placement:
+        constraints: [node.labels.vserver == true]
+      resources:
+        limits: { memory: 768M, cpus: "1.0" }
+        reservations: { memory: 128M, cpus: "0.1" }
+      restart_policy: { condition: on-failure, delay: 5s, max_attempts: 10, window: 120s }
+      update_config: { parallelism: 1, order: start-first, failure_action: rollback }
+      rollback_config: { parallelism: 1, order: stop-first }
+      labels:
+        - "home.cloud.app=analytics"
+        - "traefik.enable=false"
+
+  # Ponte de sessão: responde no lugar de /login do Umami. Só é alcançada
+  # por dentro do `sso`, ou seja, por quem já passou pelo Authentik. Usa a
+  # mesma imagem do Umami (já tem Node) para não trazer outra.
+  bridge:
+    image: ghcr.io/umami-software/umami:3.5.0
+    entrypoint:
+      - node
+      - -e
+      - |
+        const http = require('http')
+        const credentials = JSON.stringify({ username: process.env.UMAMI_USERNAME, password: process.env.UMAMI_PASSWORD })
+        const page = token => '<!doctype html><meta charset="utf-8"><title>Analytics</title><script>localStorage.setItem("umami.auth",'
+          + JSON.stringify(JSON.stringify(token)) + ');location.replace("/")</script>'
+        const send = (res, status, type, body) => {
+          res.writeHead(status, { 'content-type': type + '; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(body)
+        }
+        http.createServer(async (req, res) => {
+          if (req.url === '/healthz') return send(res, 200, 'text/plain', 'ok')
+          try {
+            const login = await fetch(process.env.UMAMI_URL + '/api/auth/login', {
+              method: 'POST', headers: { 'content-type': 'application/json' }, body: credentials
+            })
+            if (!login.ok) throw new Error('umami login ' + login.status)
+            send(res, 200, 'text/html', page((await login.json()).token))
+          } catch (error) {
+            console.error(error.message)
+            send(res, 502, 'text/plain', 'Analytics indisponível no momento.')
+          }
+        }).listen(8080)
+    environment:
+      UMAMI_URL: http://umami:3000
+      UMAMI_USERNAME: admin
+      UMAMI_PASSWORD: ${UMAMI_ADMIN_PASSWORD:?defina UMAMI_ADMIN_PASSWORD na stack}
+    networks: [internal]
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging: *logging
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.labels.vserver == true]
+      resources:
+        limits: { memory: 128M, cpus: "0.25" }
+        reservations: { memory: 32M, cpus: "0.05" }
+      restart_policy: { condition: any, delay: 5s }
+      update_config: { parallelism: 1, order: start-first, failure_action: rollback }
+      labels:
+        - "home.cloud.app=analytics"
+        - "traefik.enable=false"
+
+  # Portão SSO (padrão da casa para app sem OIDC próprio, como o Konga).
+  sso:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.8.1
+    command:
+      - --provider=oidc
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://umami:3000/
+      - --upstream=http://bridge:8080/login
+      - --redirect-url=https://analytics.brenon.cloud/oauth2/callback
+      - --oidc-issuer-url=https://auth.brenon.cloud/application/o/analytics/
+      - --client-id=analytics
+      - --client-secret=${OIDC_CLIENT_SECRET:?defina OIDC_CLIENT_SECRET na stack}
+      - --cookie-secret=${COOKIE_SECRET:?defina COOKIE_SECRET na stack}
+      - --cookie-secure=true
+      - --cookie-samesite=lax
+      - --email-domain=*
+      - --insecure-oidc-allow-unverified-email=true
+      - --skip-provider-button=true
+      - --cookie-csrf-per-request=false
+      - --whitelist-domain=.brenon.cloud
+      - --reverse-proxy=true
+      - --oidc-groups-claim=groups
+      - --allowed-group=brenon-admins
+      # O Umami usa o cabeçalho Authorization para a própria sessão: o
+      # proxy não pode sobrescrevê-lo com Basic.
+      - --pass-basic-auth=false
+      # Coleta: o script e o envio de eventos são chamados pelos sites
+      # medidos, de qualquer visitante, sem sessão.
+      - --skip-auth-route=GET=^/script\.js$$
+      - --skip-auth-route=POST=^/api/send$$
+      - --skip-auth-route=OPTIONS=^/api/send$$
+    ports:
+      - target: 4180
+        published: 18092
+        protocol: tcp
+        mode: ingress
+    networks: [internal]
+    logging: *logging
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.labels.vserver == true]
+      resources:
+        limits: { memory: 128M, cpus: "0.5" }
+        reservations: { memory: 32M, cpus: "0.05" }
+      restart_policy: { condition: any, delay: 5s }
+      update_config: { parallelism: 1, order: stop-first, failure_action: rollback }
+      labels:
+        - "home.cloud.app=analytics"
+        - "traefik.enable=false"
+
+networks:
+  internal:
+    driver: overlay
+
+volumes:
+  postgres_data:
