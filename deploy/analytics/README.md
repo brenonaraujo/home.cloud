@@ -92,6 +92,9 @@ caem na troca.
 | Profitt (`profitt.brenon.cloud`) | `5231d458-7c84-49e0-927b-17c6b9455022` |
 | Site (`brenon.cloud`) | `db5485ed-47f0-433d-925e-342e60f8c477` |
 | Console (`console.brenon.cloud`) | `3022cb3f-2a04-45e2-ad3f-d0926a01d544` |
+| Oficina (`oficina.brenon.cloud`) | `d46890e2-6ab1-4533-a39f-fba47f5b0246` |
+| BRNN AI (`ai.brenon.cloud`) | `78de0c62-2d5e-4b51-b551-fe942ffa2fcb` |
+| Mentoria (`mentoria.brenon.cloud`) | `36d60135-4416-4207-aecf-0293e37a4325` |
 
 O id não é segredo: aparece no HTML de toda página medida.
 
