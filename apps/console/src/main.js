@@ -7,6 +7,7 @@ import { AUTH_CALLBACK_PATH, AUTH_CONTINUE_PATH, isLiveOidc } from './config/aut
 import { PATHS } from './config/console-paths.mjs'
 import { htmlLang, pageTitle } from './config/console-title.mjs'
 import { pageTitleOverride } from './composables/usePageTitle.js'
+import { installAnalytics } from './analytics.js'
 import App from './App.vue'
 import './style.css'
 
@@ -107,4 +108,5 @@ watchEffect(() => {
 })
 
 useAuthStore().hydrate()
+installAnalytics(router)
 app.mount('#app')

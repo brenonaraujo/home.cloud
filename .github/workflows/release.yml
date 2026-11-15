@@ -194,6 +194,9 @@ jobs:
           push: true
           provenance: false
           tags: ${{ steps.tags.outputs.list }}
+          build-args: |
+            VITE_ANALYTICS_URL=https://analytics.brenon.cloud
+            VITE_ANALYTICS_WEBSITE_ID=3022cb3f-2a04-45e2-ad3f-d0926a01d544
           labels: |
             org.opencontainers.image.title=home-cloud-console
             org.opencontainers.image.description=Member console SPA (nginx)

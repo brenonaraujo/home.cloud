@@ -82,12 +82,16 @@ caem na troca.
    `brenon.cloud` são `VITE_ANALYTICS_URL` e
    `VITE_ANALYTICS_WEBSITE_ID`, só no contexto production do Netlify
    (o Vite grava no build). Qualquer uma vazia e o script não carrega.
-   `?nocount=1` continua desligando a contagem naquele browser.
+   `?nocount=1` continua desligando a contagem naquele browser. Na
+   console os mesmos nomes entram como build-arg do release
+   (`platform/spa-nginx`); o smoke da CI não os recebe, então a imagem
+   de teste não mede.
 
 | Produto | Website ID |
 |---------|------------|
 | Profitt (`profitt.brenon.cloud`) | `5231d458-7c84-49e0-927b-17c6b9455022` |
 | Site (`brenon.cloud`) | `db5485ed-47f0-433d-925e-342e60f8c477` |
+| Console (`console.brenon.cloud`) | `3022cb3f-2a04-45e2-ad3f-d0926a01d544` |
 
 O id não é segredo: aparece no HTML de toda página medida.
 

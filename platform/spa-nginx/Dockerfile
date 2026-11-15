@@ -24,6 +24,12 @@ COPY --from=spa *.config.js ./
 COPY --from=spa public ./public
 COPY --from=spa src ./src
 
+# Medição de uso. Vazios = desligada (build local e o smoke da CI).
+# O release passa os dois build-args; o id está no README do analytics.
+ARG VITE_ANALYTICS_URL=
+ARG VITE_ANALYTICS_WEBSITE_ID=
+ENV VITE_ANALYTICS_URL=$VITE_ANALYTICS_URL
+ENV VITE_ANALYTICS_WEBSITE_ID=$VITE_ANALYTICS_WEBSITE_ID
 ENV NODE_ENV=production
 RUN npm run build
 
