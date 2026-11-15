@@ -78,11 +78,16 @@ caem na troca.
 3. No produto, carregar `https://analytics.brenon.cloud/script.js` com
    esse id. No `profitt-v2` são duas variáveis
    (`NUXT_PUBLIC_ANALYTICS_URL`, `NUXT_PUBLIC_ANALYTICS_WEBSITE_ID`);
-   ver o ADR-0049 de lá para as regras de consentimento.
+   ver o ADR-0049 de lá para as regras de consentimento. No site
+   `brenon.cloud` são `VITE_ANALYTICS_URL` e
+   `VITE_ANALYTICS_WEBSITE_ID`, só no contexto production do Netlify
+   (o Vite grava no build). Qualquer uma vazia e o script não carrega.
+   `?nocount=1` continua desligando a contagem naquele browser.
 
 | Produto | Website ID |
 |---------|------------|
 | Profitt (`profitt.brenon.cloud`) | `5231d458-7c84-49e0-927b-17c6b9455022` |
+| Site (`brenon.cloud`) | `db5485ed-47f0-433d-925e-342e60f8c477` |
 
 O id não é segredo: aparece no HTML de toda página medida.
 
@@ -106,5 +111,7 @@ falha nele não quebra nada. Perde-se a medição do período.
 
 - Backup: dump diário do PostgreSQL para o MinIO do lab. Até lá o
   volume é a única cópia.
-- Migrar o coletor à mão do site `brenon.cloud`
-  (`brenon.cloud/src/analytics.js`) para esta instância.
+- O coletor à mão do control plane (`POST /api/v1/analytics/collect`)
+  não é mais chamado pelo site. Aposentar o endpoint quando o fonte
+  dele estiver no checkout do control plane — hoje a rota responde em
+  produção e o fonte não está no branch local.
