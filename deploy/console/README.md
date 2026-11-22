@@ -6,7 +6,7 @@ Swarm stack contract for the member console shell.
 - Replica **1**, healthcheck on `:8080/health`, resource limits written.
 - Placement (git contract): node label `vserver` — not a host IP.
 - No secrets. OIDC client `console` is #6. CORS / Stripe return / `GATE_URL` live on the control plane (#7), not in this compose.
-- Published port **18082** (Swarm ingress VIP) is the tunnel origin.
+- Published port **18082** in `mode: host` on the node that runs the task is the tunnel origin (not the ingress VIP — see "Why host mode").
 
 ## Public edge (issue #5)
 
@@ -20,6 +20,29 @@ Additive only. Existing `home-server` hostnames/CNAME were not replaced.
 | Origin | stack `brenon-console`, published `18082` → container `8080` |
 
 F1.2 (#4) versioned this compose but did not apply it. F1.3 applied the stack so the public hostname had an origin, then merged **only** the `console` ingress rule (GET → merge → PUT; refuse if the previous hostname set shrank) and created the CNAME.
+
+## Why host mode (2026-11-22)
+
+The stack was written for the Swarm ingress VIP. On `server102`, where the task runs live, that mesh loses mid-size TCP packets:
+
+- a segment sent alone with **1149–1398 bytes** of payload (IP packet 1201–1450) never reaches the client; 1148 passes, 1399 passes;
+- so responses of about 1 kB vanish and large files stall when their last segment lands in that band. The console bundle stopped at multiples of 1398 bytes in 2 of 3 downloads, which showed up as a **blank console right after a release** until Cloudflare had a full copy.
+
+What it is not: content (random bytes fail the same way), the client path (it fails through the tunnel too), or the whole node — on `server102` a `mode: host` port passes every size, and the ingress mesh on `home101` passes too. The shape is a 1200-MTU hop inside that node's ingress sandbox; nobody has looked at the node yet:
+
+```bash
+sudo nsenter --net=/run/docker/netns/ingress_sbox ip -d link
+```
+
+One-line check from the LAN (prints `0` while the mesh is broken, `1250` when healthy):
+
+```bash
+curl -s -m 3 -r 0-1249 -o /dev/null -w '%{size_download}\n' http://<node>:18082/assets/<bundle>.js
+```
+
+Consequences of host mode: the port only answers on the node that runs the task (the tunnel origin must point there), and updates are `stop-first`, a few seconds of 502 per release. Return to `mode: ingress` and `start-first` once the mesh is repaired.
+
+**Applying it:** merging this file changes nothing live. The release webhook redeploys the stack text stored in Portainer, so the stored stack `brenon-console` has to be updated by hand (same two edits: `mode: host`, `order: stop-first`), keeping its live env and placement.
 
 ## F1.ci — GHCR + Portainer webhook (issue #26)
 

@@ -38,7 +38,7 @@ sequenceDiagram
     CI->>GHCR: push linux/amd64
     CI->>GHCR: verificar digest
     CI->>PT: POST webhook secret
-    PT->>SW: pull GHCR + roll start-first
+    PT->>SW: pull GHCR + roll stop-first (host port)
 ```
 
 **Não é o caminho feliz:** `docker save` / `docker load`, ForceUpdate manual, PUT do `stack.yml` git com senha mascarada (`***`), PUT túnel, `stack rm` tenant, secret no git, `latest` como contrato de produção (use `vX.Y.Z` ou `sha-<commit>` em `CONSOLE_IMAGE_TAG`).
