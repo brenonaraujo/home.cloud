@@ -11,9 +11,15 @@
 # `latest` is not the production contract.
 #
 # Networks: overlay by name. No 192.168.x / host IP as the first option.
-# Published port is Swarm ingress (VIP), for a future tunnel to reach the task.
-# Fallback if overlay/VIP cannot be reached: document why, then bind a host port
-# on the labeled node — never lead with a machine address in this file.
+# Published port: bound on the node that runs the task (mode: host). This is the
+# documented fallback, taken on 2026-11-22: the ingress mesh (VIP) on server102
+# drops TCP segments sent alone with 1149-1398 bytes of payload (IP 1201-1450),
+# so ~1 kB responses vanish and the JS bundle stalls mid-download (blank console
+# after a release until the CDN holds a full copy). Same node, mode: host: fine.
+# Ingress on home101: fine. Details and the one-line test in README.md.
+# Go back to ingress only after that node's mesh is repaired.
+# The tunnel origin is therefore <node that runs the task>:18082 — still no
+# machine address in this file.
 
 version: "3.9"
 
@@ -26,7 +32,7 @@ services:
       - target: 8080
         published: 18082
         protocol: tcp
-        mode: ingress
+        mode: host
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 20s
@@ -58,7 +64,9 @@ services:
         window: 60s
       update_config:
         parallelism: 1
-        order: start-first
+        # stop-first: with a host port the new task cannot bind 18082 while the
+        # old one still holds it. A release is a few seconds of 502 at the origin.
+        order: stop-first
         failure_action: rollback
       rollback_config:
         parallelism: 1
