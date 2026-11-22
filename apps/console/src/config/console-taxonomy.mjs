@@ -3,6 +3,7 @@
  * Live catalog may send `kind` or `category`; otherwise we infer:
  *   application = public product (`groups: ['*']` or known product ids)
  *   platform    = staff/ops consoles
+ *   game        = games of the house (explicit kind, gamepad icon or known ids)
  */
 
 const PLATFORM_IDS = new Set([
@@ -26,13 +27,19 @@ const STAFF_GROUPS = [
   'hermes-owner'
 ]
 
+// Games get their own section. The control plane has no `kind` column yet,
+// so the gamepad icon (or a known id) is what marks a tile as a game.
+const GAME_IDS = new Set(['tiballz'])
+
 export function serviceKind(svc) {
   const explicit = String(svc?.kind || svc?.category || '').toLowerCase()
+  if (explicit === 'game' || explicit === 'games') return 'game'
   if (explicit === 'platform') return 'platform'
   if (explicit === 'product' || explicit === 'application' || explicit === 'app') {
     return 'application'
   }
   const id = String(svc?.id || '').toLowerCase()
+  if (!explicit && (GAME_IDS.has(id) || String(svc?.icon || '').toLowerCase() === 'gamepad')) return 'game'
   if (PLATFORM_IDS.has(id)) return 'platform'
   const groups = svc?.groups || []
   if (groups.includes('*')) return 'application'
@@ -42,11 +49,14 @@ export function serviceKind(svc) {
 export function groupServices(services) {
   const applications = []
   const platform = []
+  const games = []
   for (const svc of services || []) {
-    if (serviceKind(svc) === 'application') applications.push(svc)
+    const kind = serviceKind(svc)
+    if (kind === 'game') games.push(svc)
+    else if (kind === 'application') applications.push(svc)
     else platform.push(svc)
   }
-  return { applications, platform }
+  return { applications, platform, games }
 }
 
 export function searchServices(services, query, locale = 'en') {

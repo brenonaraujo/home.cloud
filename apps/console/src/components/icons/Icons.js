@@ -41,6 +41,27 @@ export const BoltIcon = defineComponent({
   }
 })
 
+export const GamepadIcon = defineComponent({
+  name: 'GamepadIcon',
+  props: {
+    class: String
+  },
+  render() {
+    return h('svg', {
+      class: this.class,
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
+      'stroke-width': '2',
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round'
+    }, [
+      h('path', { d: 'M7 8h10a5 5 0 0 1 4.9 6l-.6 3a2.4 2.4 0 0 1-4.2 1.1L15.5 16h-7l-1.6 2.1a2.4 2.4 0 0 1-4.2-1.1l-.6-3A5 5 0 0 1 7 8z' }),
+      h('path', { d: 'M8 11v3M6.5 12.5h3M15.5 11.5h.01M17.5 13.5h.01' })
+    ])
+  }
+})
+
 export const CubeIcon = defineComponent({
   name: 'CubeIcon',
   props: {
