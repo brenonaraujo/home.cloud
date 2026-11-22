@@ -91,9 +91,13 @@ const starred = computed(() => app.value && catalog.isFavorite(app.value.id))
 usePageTitle(() => (app.value ? label(app.value.title) : ''))
 const details = computed(() => (app.value ? serviceDetails(app.value, locale.value) : null))
 const kindLabel = computed(() =>
-  app.value && serviceKind(app.value) === 'application'
-    ? t('console.services.kindApplication')
-    : t('console.services.kindPlatform')
+  !app.value
+    ? t('console.services.kindPlatform')
+    : serviceKind(app.value) === 'game'
+      ? t('console.services.kindGame')
+      : serviceKind(app.value) === 'application'
+        ? t('console.services.kindApplication')
+        : t('console.services.kindPlatform')
 )
 const accessLabel = computed(() =>
   details.value?.access === 'any' ? t('console.services.anyAccount') : t('console.services.staffOnly')

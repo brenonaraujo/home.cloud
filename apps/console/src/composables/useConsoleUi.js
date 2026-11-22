@@ -7,6 +7,7 @@ import {
   CloudStorageIcon,
   CubeIcon,
   DrawIcon,
+  GamepadIcon,
   SettingsIcon,
   WorkflowIcon
 } from '../components/icons/Icons.js'
@@ -18,7 +19,8 @@ const ICONS = {
   cloudstorage: CloudStorageIcon,
   settings: SettingsIcon,
   cube: CubeIcon,
-  bolt: BoltIcon
+  bolt: BoltIcon,
+  gamepad: GamepadIcon
 }
 
 const WRAP = {

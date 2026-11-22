@@ -126,6 +126,22 @@
           </li>
         </ul>
 
+        <p v-if="games.length" class="console-nav-label">{{ t('console.nav.games') }}</p>
+        <ul v-if="games.length" class="flex flex-col gap-1">
+          <li v-for="app in games" :key="'game-' + app.id">
+            <router-link
+              :to="'/services/' + app.id"
+              class="console-nav-link"
+              :class="exactActive('/services/' + app.id)"
+              :aria-current="route.path === '/services/' + app.id ? 'page' : undefined"
+              @click="$emit('close')"
+            >
+              <component :is="iconOf(app.icon)" class="h-4 w-4" :class="iconColor(app.color)" />
+              <span class="truncate">{{ label(app.title) }}</span>
+            </router-link>
+          </li>
+        </ul>
+
         <p v-if="platform.length" class="console-nav-label">{{ t('console.nav.platform') }}</p>
         <ul v-if="platform.length" class="flex flex-col gap-1">
           <li v-for="app in platform" :key="'plat-' + app.id">
@@ -212,6 +228,7 @@ const { label, iconOf, iconColor } = useConsoleUi()
 const grouped = computed(() => catalog.groupedFor(auth.groups))
 const applications = computed(() => grouped.value.applications)
 const platform = computed(() => grouped.value.platform)
+const games = computed(() => grouped.value.games)
 const favorites = computed(() => catalog.favoriteApps(auth.groups))
 
 const toggleFavoritesHidden = () => {

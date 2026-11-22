@@ -60,6 +60,17 @@ describe('groupServices / searchServices', () => {
     { id: 'grafana', groups: ['brenon-admins'], title: { en: 'Grafana' }, description: { en: 'Metrics' }, url: 'https://grafana.brenon.cloud' }
   ]
 
+  it('gives games their own group: explicit kind, gamepad icon or known id', () => {
+    assert.equal(serviceKind({ id: 'tiballz', groups: ['*'] }), 'game')
+    assert.equal(serviceKind({ id: 'outro-jogo', groups: ['*'], icon: 'gamepad' }), 'game')
+    assert.equal(serviceKind({ id: 'x', groups: ['*'], kind: 'games' }), 'game')
+    assert.equal(serviceKind({ id: 'tiballz', groups: ['*'], kind: 'platform' }), 'platform', 'explicit kind wins')
+    const grouped = groupServices([...catalog, { id: 'tiballz', groups: ['*'], icon: 'gamepad', title: { en: 'Tiballz' } }])
+    assert.deepEqual(grouped.games.map((s) => s.id), ['tiballz'])
+    assert.deepEqual(grouped.applications.map((s) => s.id), ['draw'], 'games do not leak into applications')
+    assert.deepEqual(groupServices(catalog).games, [])
+  })
+
   it('splits application vs platform', () => {
     const grouped = groupServices(catalog)
     assert.deepEqual(grouped.applications.map((s) => s.id), ['draw'])
