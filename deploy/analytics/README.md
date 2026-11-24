@@ -85,7 +85,9 @@ caem na troca.
    `?nocount=1` continua desligando a contagem naquele browser. Na
    console os mesmos nomes entram como build-arg do release
    (`platform/spa-nginx`); o smoke da CI não os recebe, então a imagem
-   de teste não mede.
+   de teste não mede. No Tiballz são `ANALYTICS_URL` e
+   `ANALYTICS_WEBSITE_ID` na stack `tiballz` (padrão no `stack.yml` de
+   lá); só o portal público é medido, e só de quem não tem sessão.
 
 | Produto | Website ID |
 |---------|------------|
@@ -95,6 +97,7 @@ caem na troca.
 | Oficina (`oficina.brenon.cloud`) | `d46890e2-6ab1-4533-a39f-fba47f5b0246` |
 | BRNN AI (`ai.brenon.cloud`) | `78de0c62-2d5e-4b51-b551-fe942ffa2fcb` |
 | Mentoria (`mentoria.brenon.cloud`) | `36d60135-4416-4207-aecf-0293e37a4325` |
+| Tiballz (`tiballz.brenon.cloud`) | `17e2f09d-22a1-4136-b2a6-9b35905b2c2e` |
 
 O id não é segredo: aparece no HTML de toda página medida.
 
